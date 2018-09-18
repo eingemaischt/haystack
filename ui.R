@@ -5,8 +5,8 @@ shinyUI(
     dashboardSidebar(
       sidebarMenu(
         menuItem("Call table", tabName = "callTableTab", icon = icon("th-list")),
-        menuItem("Genes", tabName = "geneTab", icon = icon("barcode")),
-        menuItem("Histograms", tabName = "histogramTab", icon = icon("signal ")),
+        menuItem("Genes", tabName = "geneTab", icon = icon("leaf")),
+        menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
         numericInput("minSamplePercentage",  label = "Minimum percentage of samples affected", min = 0, max = 100, value = 0, step = 1),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
@@ -65,6 +65,18 @@ shinyUI(
               solidHeader = TRUE,
               collapsible = TRUE,
               DT::dataTableOutput("geneTable")
+            )
+          )
+        ),
+        tabItem(tabName = "annotationTab",
+          fluidRow(
+            box(
+              style = "overflow-x: scroll",
+              title = "Annotation Table",
+              width = 12,
+              solidHeader = TRUE,
+              footer = "This window shows the annotation data used for this app, it is extracted from the HGNC.",
+              DT::dataTableOutput("annotationTable")
             )
           )
         ),

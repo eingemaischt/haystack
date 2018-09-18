@@ -163,6 +163,21 @@ shinyServer(function(input, output, session) {
     )
   })
 
+  output$annotationTable <- DT::renderDataTable(DT::datatable(shiny.huge.geneTable,
+                         selection = "single",
+                         style = "bootstrap",
+                         class = DT:::DT2BSClass(c("compact", "hover", "stripe")),
+                         options = list(columnDefs = list(list(
+                           targets = seq_len(ncol(shiny.huge.geneTable)),
+                           render = DT::JS(
+                             "function(data, type, row, meta) {",
+                             "if (data == null) return '';",
+                             "return type === 'display' && data.length > 20 ?",
+                             "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                             "}"
+                           )))
+                         )))
+
   ### SIDEBAR
 
   output$numTotalRows    <- renderText({ paste("Total calls in table: ",    nrow(fullCallTable())) })
