@@ -59,6 +59,7 @@ shinyUI(
         tabItem(tabName = "geneTab",
           fluidRow(
             box(
+              style = "overflow-x: scroll",
               title = "Gene Table",
               width = 12,
               solidHeader = TRUE,

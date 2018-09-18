@@ -72,6 +72,12 @@ shinyServer(function(input, output, session) {
     gt <- gt[, .N, by = .(Symbol)]
     gt <- gt[order(N, decreasing = TRUE)]
 
+    matchingGeneIndices <- match(gt$Symbol, shiny.huge.geneTable$symbol)
+
+    gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
+    gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
+    gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
+
     geneTable(gt)
     filteredCallTable(ct)
   })
@@ -152,12 +158,13 @@ shinyServer(function(input, output, session) {
     ]
 
     showModal(modalDialog(
-      shiny.huge.detailDivElement("Sample:", selectedRow$Sample),
-      shiny.huge.detailDivElement("Chromosome:", selectedRow$Chr),
+      shiny.huge.detailDivElement("Location:", matchingGene$location),
       shiny.huge.detailDivElement("Gene (found in table):", selectedRow$Symbol),
       shiny.huge.detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
       shiny.huge.detailDivElement("Gene full name:", matchingGene$name),
+      shiny.huge.detailDivElement("Gene family:", matchingGene$gene_family),
       shiny.huge.detailDivElement("Gene description:", matchingGene$description),
+      shiny.huge.detailDivElement("Location type:", matchingGene$location_type),
       shiny.huge.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
       tags$hr(),
       tags$b("Expression:"),

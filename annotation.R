@@ -6,7 +6,7 @@ library(hpar)
 shiny.huge.martMirror <- "www.ensembl.org"
 shiny.huge.allowedLevels <- c("High", "Medium", "Low")
 shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-shiny.huge.minTPMLevel <- 0.01
+shiny.huge.minTPMLevel <- 0.001
 
 # data("hpaNormalTissue")
 # data("rnaGeneTissue")
