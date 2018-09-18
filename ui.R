@@ -8,8 +8,8 @@ shinyUI(
         menuItem("Genes", tabName = "geneTab", icon = icon("barcode")),
         menuItem("Histograms", tabName = "histogramTab", icon = icon("signal ")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
-        numericInput("minSamplePercent",  label = "Maximum p-value", value = 0.05),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = c("None")),
+        numericInput("minSamplePercentage",  label = "Minimum percentage of samples affected", min = 0, max = 100, value = 0, step = 1),
+        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         hr(),
         fluidPage(
           fluidRow(
@@ -53,6 +53,17 @@ shinyUI(
               solidHeader = TRUE,
               p("Select which columns to display here. Beware to not disable columns that you want to use otherwise (e.g. histograms)."),
               checkboxGroupInput("selectedColumns", label = "Show columns: ", inline = TRUE)
+            )
+          )
+        ),
+        tabItem(tabName = "geneTab",
+          fluidRow(
+            box(
+              title = "Gene Table",
+              width = 12,
+              solidHeader = TRUE,
+              collapsible = TRUE,
+              DT::dataTableOutput("geneTable")
             )
           )
         ),

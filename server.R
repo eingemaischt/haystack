@@ -29,8 +29,11 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
 
 shinyServer(function(input, output, session) {
 
-  fullTable <- reactiveVal()
-  filteredTable <- reactiveVal()
+  fullCallTable <- reactiveVal()
+  filteredCallTable <- reactiveVal()
+
+  geneTable <- reactiveVal()
+
   dtInstance <- reactiveVal()
 
   ### CALL TABLE TAB
@@ -42,39 +45,46 @@ shinyServer(function(input, output, session) {
     progress <- shiny::Progress$new()
     progress$set(message = "Uploading table", value = .5)
 
-    dt <- fread(input$callFile$datapath)
+    ct <- fread(input$callFile$datapath)
 
-    req(dt)
+    req(ct)
 
-    updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(dt), selected = colnames(dt))
+    updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
+    updateNumericInput(session, "minSamplePercentage", value = 0)
+    updateSelectizeInput(session, "expressions", selected = NULL)
 
-    updateSelectizeInput(session, "expressions", choices = unique(shiny.huge.gtexExpression$tissue), selected = NULL)
-
-    fullTable(dt)
+    fullCallTable(ct)
 
     progress$close()
   })
 
   observe({
 
-    req(fullTable())
+    req(fullCallTable())
     req(input$selectedColumns)
 
-    dt <- fullTable()
-    dt <- dt[,input$selectedColumns, with = FALSE]
+    ct <- fullCallTable()
 
-    filteredTable(dt)
+    ct <- ct[,input$selectedColumns, with = FALSE]
+
+    # count mutations per gene per sample by multiple aggregations
+    gt <- ct[, .N, by = .(Symbol, Sample)]
+    gt <- gt[, .N, by = .(Symbol)]
+    gt <- gt[order(N, decreasing = TRUE)]
+
+    geneTable(gt)
+    filteredCallTable(ct)
   })
 
   output$callTable <- DT::renderDataTable({
 
-    req(filteredTable())
-    return(DT::datatable(filteredTable(),
+    req(filteredCallTable())
+    return(DT::datatable(filteredCallTable(),
                          selection = "single",
                          style = "bootstrap",
                          class = DT:::DT2BSClass(c("compact", "hover", "stripe")),
                          options = list(columnDefs = list(list(
-                          targets = seq_len(ncol(filteredTable())),
+                          targets = seq_len(ncol(filteredCallTable())),
                           render = DT::JS(
                             "function(data, type, row, meta) {",
                             "if (data == null) return '';",
@@ -85,20 +95,29 @@ shinyServer(function(input, output, session) {
                         )))
   })
 
+  output$geneTable <- DT::renderDataTable({
+    req(geneTable())
+
+    return(DT::datatable(geneTable(),
+                         selection = "single",
+                         style = "bootstrap",
+                         class = DT:::DT2BSClass(c("hover", "stripe")))
+    )
+  })
 
   ### SIDEBAR
 
-  output$numTotalRows    <- renderText({ paste("Total calls in table: ",    nrow(fullTable())) })
-  output$numFilteredRows <- renderText({ paste("Filtered calls in table: ", nrow(filteredTable())) })
+  output$numTotalRows    <- renderText({ paste("Total calls in table: ",    nrow(fullCallTable())) })
+  output$numFilteredRows <- renderText({ paste("Filtered calls in table: ", nrow(filteredCallTable())) })
 
   ### REACTOME TAB
 
   observeEvent(input$openReactomeButton, {
 
-    req(filteredTable())
-    req(filteredTable()$symbol)
+    req(filteredCallTable())
+    req(filteredCallTable()$symbol)
 
-    hgncGenes <- unique(filteredTable()$symbol)
+    hgncGenes <- unique(filteredCallTable()$symbol)
     hgncGenes <- hgncGenes[hgncGenes != "NULL"]
 
     progress <- shiny::Progress$new()
@@ -122,9 +141,9 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$callTable_rows_selected, {
 
-    req(filteredTable())
+    req(filteredCallTable())
 
-    selectedRow <- filteredTable()[input$callTable_rows_selected]
+    selectedRow <- filteredCallTable()[input$callTable_rows_selected]
 
     matchingGene <- shiny.huge.geneTable[
       symbol == selectedRow$Symbol |
