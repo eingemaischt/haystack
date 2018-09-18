@@ -102,7 +102,7 @@ shiny.huge.queryExpressionAnnotations <- function (ensemblStrings) {
 
     # normalExpressions <- shiny.huge.normalExpressions[shiny.huge.normalExpressions$Gene %in% ids, c("Tissue", "Level")]
     # rnaGeneExpressions <- shiny.huge.rnaExpressions[shiny.huge.rnaExpressions$Gene %in% ids, c("Sample", "Value")]
-    gtexExpressions <- shiny.huge.gtexExpression[shiny.huge.gtexExpression$gene_id %in% ids, c("tissue", "tpm")]
+    gtexExpressions <- shiny.huge.gtexExpression[shiny.huge.gtexExpression$Description %in% ids, c("tissue", "tpm")]
 
     # colnames(normalExpressions) <- targetColnames
     # colnames(rnaGeneExpressions) <- targetColnames
