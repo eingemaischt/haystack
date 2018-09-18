@@ -27,6 +27,58 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
 
 }
 
+shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection, input, output) {
+
+  return({
+
+    req(callTableReactiveVal())
+
+    selectedRow <- callTableReactiveVal()[row_selection]
+
+    matchingGene <- shiny.huge.geneTable[
+      symbol == selectedRow$Symbol |
+        grepl(selectedRow$Symbol, prev_symbol) |
+        grepl(selectedRow$Symbol, alias_symbol)
+      ]
+
+    showModal(modalDialog(
+      shiny.huge.detailDivElement("Location:", matchingGene$location),
+      shiny.huge.detailDivElement("Gene (found in table):", selectedRow$Symbol),
+      shiny.huge.detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
+      shiny.huge.detailDivElement("Gene full name:", matchingGene$name),
+      shiny.huge.detailDivElement("Gene family:", matchingGene$gene_family),
+      shiny.huge.detailDivElement("Gene description:", matchingGene$description),
+      shiny.huge.detailDivElement("Location type:", matchingGene$location_type),
+      shiny.huge.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
+      tags$hr(),
+      tags$b("Expression:"),
+      tabsetPanel(
+        tabPanel("GTEx tissues", plotOutput("modalGTExExpression", height = "640px"))
+      ),
+      title = "Details",
+      footer = actionButton("modalOkBtn", label = "OK", icon = icon("ok")),
+      size = "l",
+      easyClose = TRUE
+    ))
+
+    expression <- shiny.huge.queryExpressionAnnotations(selectedRow$Symbol)[[1]]
+    # workaround for 'max' not working properly for factors in data.table
+    # see: https://github.com/Rdatatable/data.table/issues/1947
+    maxFixFn <- max
+    expression <- lapply(expression, function (expr) {
+
+      if (nrow(expr) == 0) return(expr)
+
+      expr[,list(value = maxFixFn(value)), by = "tissue"]
+    })
+
+    #output$modalNormalExpression <- shiny.huge.modalExpressionPlot(expression$normal, input$expressions, paste(selectedRow$RSID, "HPA immunohistochemistry data", sep = ": "))
+    #output$modalRnaExpression <- shiny.huge.modalExpressionPlot(expression$rna, input$expressions, paste(selectedRow$RSID, "HPA RNA-seq data", sep = ": "))
+    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(expression$gtex, input$expressions, paste(selectedRow$Symbol, "GTEx data", sep = ": "))
+  })
+
+}
+
 shinyServer(function(input, output, session) {
 
   fullCallTable <- reactiveVal()
@@ -145,53 +197,21 @@ shinyServer(function(input, output, session) {
 
   ### DETAIL MODAL
 
-  observeEvent(input$callTable_rows_selected, {
+  observeEvent(input$callTable_rows_selected,
+               shiny.huge.geneModalExpression(
+                 filteredCallTable,
+                 input$callTable_rows_selected,
+                 input,
+                 output)
+  )
 
-    req(filteredCallTable())
-
-    selectedRow <- filteredCallTable()[input$callTable_rows_selected]
-
-    matchingGene <- shiny.huge.geneTable[
-      symbol == selectedRow$Symbol |
-      grepl(selectedRow$Symbol, prev_symbol) |
-      grepl(selectedRow$Symbol, alias_symbol)
-    ]
-
-    showModal(modalDialog(
-      shiny.huge.detailDivElement("Location:", matchingGene$location),
-      shiny.huge.detailDivElement("Gene (found in table):", selectedRow$Symbol),
-      shiny.huge.detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
-      shiny.huge.detailDivElement("Gene full name:", matchingGene$name),
-      shiny.huge.detailDivElement("Gene family:", matchingGene$gene_family),
-      shiny.huge.detailDivElement("Gene description:", matchingGene$description),
-      shiny.huge.detailDivElement("Location type:", matchingGene$location_type),
-      shiny.huge.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
-      tags$hr(),
-      tags$b("Expression:"),
-      tabsetPanel(
-        tabPanel("GTEx tissues", plotOutput("modalGTExExpression", height = "640px"))
-      ),
-      title = "Details",
-      footer = actionButton("modalOkBtn", label = "OK", icon = icon("ok")),
-      size = "l",
-      easyClose = TRUE
-    ))
-
-    expression <- shiny.huge.queryExpressionAnnotations(selectedRow$Symbol)[[1]]
-    # workaround for 'max' not working properly for factors in data.table
-    # see: https://github.com/Rdatatable/data.table/issues/1947
-    maxFixFn <- max
-    expression <- lapply(expression, function (expr) {
-
-      if (nrow(expr) == 0) return(expr)
-
-      expr[,list(value = maxFixFn(value)), by = "tissue"]
-    })
-
-    #output$modalNormalExpression <- shiny.huge.modalExpressionPlot(expression$normal, input$expressions, paste(selectedRow$RSID, "HPA immunohistochemistry data", sep = ": "))
-    #output$modalRnaExpression <- shiny.huge.modalExpressionPlot(expression$rna, input$expressions, paste(selectedRow$RSID, "HPA RNA-seq data", sep = ": "))
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(expression$gtex, input$expressions, paste(selectedRow$Symbol, "GTEx data", sep = ": "))
-  })
+  observeEvent(input$geneTable_rows_selected,
+               shiny.huge.geneModalExpression(
+                 geneTable,
+                 input$geneTable_rows_selected,
+                 input,
+                 output)
+  )
 
   observeEvent(input$modalOkBtn, {
     removeModal()
