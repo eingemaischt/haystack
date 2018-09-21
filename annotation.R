@@ -7,7 +7,7 @@ library(hashmap)
 shiny.huge.martMirror <- "www.ensembl.org"
 shiny.huge.allowedLevels <- c("High", "Medium", "Low")
 shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-shiny.huge.minTPMLevel <- 0
+shiny.huge.minTPMLevel <- 0.1
 
 # data("hpaNormalTissue")
 # data("rnaGeneTissue")
@@ -123,15 +123,13 @@ shiny.huge.annotateFromEntrez <- function (hgncSymbols) {
 
 shiny.huge.queryExpressionAnnotations <- function (ensemblStrings) {
 
-  splitEnsemblIds <- strsplit(ensemblStrings, ",")
-
-  expressions <- lapply(splitEnsemblIds, function (ids) {
+  expressions <- lapply(ensemblStrings, function (ids) {
 
     targetColnames <- c("tissue", "value")
 
     # normalExpressions <- shiny.huge.normalExpressions[shiny.huge.normalExpressions$Gene %in% ids, c("Tissue", "Level")]
     # rnaGeneExpressions <- shiny.huge.rnaExpressions[shiny.huge.rnaExpressions$Gene %in% ids, c("Sample", "Value")]
-    gtexExpressions <- shiny.huge.gtexExpression[shiny.huge.gtexExpression$Description %in% ids, c("tissue", "tpm")]
+    gtexExpressions <- shiny.huge.gtexExpression[shiny.huge.gtexExpression$gene_id %in% ids, c("tissue", "tpm")]
 
     # colnames(normalExpressions) <- targetColnames
     # colnames(rnaGeneExpressions) <- targetColnames

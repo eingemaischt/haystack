@@ -61,7 +61,7 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
       easyClose = TRUE
     ))
 
-    expression <- shiny.huge.queryExpressionAnnotations(selectedRow$Symbol)[[1]]
+    expression <- shiny.huge.queryExpressionAnnotations(matchingGene$ensembl_gene_id)[[1]]
     # workaround for 'max' not working properly for factors in data.table
     # see: https://github.com/Rdatatable/data.table/issues/1947
     maxFixFn <- max
@@ -131,9 +131,12 @@ shinyServer(function(input, output, session) {
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
 
+    expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
+
+    ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
     numberOfSamples <- length(unique(ct$Sample))
 
-    gt <- gt[N * 100 / numberOfSamples >= input$minSamplePercentage]
+    gt <- gt[N * 100 / numberOfSamples >= input$minSamplePercentage & (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)]
     ct <- ct[Symbol %in% gt$Symbol]
 
     geneTable(gt)
