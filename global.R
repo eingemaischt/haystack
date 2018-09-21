@@ -24,6 +24,7 @@ cranPackages <- c(
   "shiny",
   "shinydashboard",
   "data.table",
+  "hashmap",
   "httr",
   "ggplot2",
   "htmlwidgets",
@@ -32,8 +33,8 @@ cranPackages <- c(
 
 biocPackages <- c(
   "biomaRt",
-  "rentrez",
-  "hpar"
+  "rentrez"
+  #"hpar"
 )
 
 for (package in cranPackages) {

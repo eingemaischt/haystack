@@ -1,12 +1,13 @@
 library(data.table)
 library(biomaRt)
 library(rentrez)
-library(hpar)
+library(hashmap)
+#library(hpar)
 
 shiny.huge.martMirror <- "www.ensembl.org"
 shiny.huge.allowedLevels <- c("High", "Medium", "Low")
 shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-shiny.huge.minTPMLevel <- 0.001
+shiny.huge.minTPMLevel <- 0
 
 # data("hpaNormalTissue")
 # data("rnaGeneTissue")
@@ -29,7 +30,7 @@ shiny.huge.gtexExpression <- (function() {
   # convert "ENSG00000235373.1" to "ENSG00000235373"
   gtexData$gene_id <- sapply(strsplit(gtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
 
-  return(gtexData[tpm >= shiny.huge.minTPMLevel])
+  return(gtexData[tpm > shiny.huge.minTPMLevel])
 })()
 
 shiny.huge.geneTable <- (function () {
@@ -42,6 +43,34 @@ shiny.huge.geneTable <- (function () {
   approvedGeneTable <- geneTable[status == "Approved"]
 
   return(approvedGeneTable)
+})()
+
+shiny.huge.symbolToIndexMap <- (function () {
+
+  symbolMap <- hashmap(shiny.huge.geneTable$symbol, seq_along(shiny.huge.geneTable$symbol))
+
+  splitAliases <- strsplit(shiny.huge.geneTable$alias_symbol, "|", fixed = TRUE)
+  splitPrevSymbols <- strsplit(shiny.huge.geneTable$prev_symbol, "|", fixed = TRUE)
+
+  aliasIndices <- lapply(seq_along(splitAliases), function (i) rep(i, length(splitAliases[[i]])))
+  prevIndices <- lapply(seq_along(splitPrevSymbols), function (i) rep(i, length(splitPrevSymbols[[i]])))
+
+  splitAliases <- unlist(splitAliases)
+  splitPrevSymbols <- unlist(splitPrevSymbols)
+  aliasIndices <- unlist(aliasIndices)
+  prevIndices <- unlist(prevIndices)
+
+  secondaryNames <- c(splitAliases, splitPrevSymbols)
+  secondaryIndices <- c(aliasIndices, prevIndices)
+
+  validIndices <- !duplicated(secondaryNames) & !secondaryNames %in% shiny.huge.geneTable$symbol
+
+  secondaryKeys <- secondaryNames[validIndices]
+  secondaryValues <- secondaryIndices[validIndices]
+
+  symbolMap[[secondaryKeys]] <- secondaryValues
+
+  return(symbolMap)
 })()
 
 shiny.huge.annotateFromEntrez <- function (hgncSymbols) {

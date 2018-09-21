@@ -48,7 +48,7 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
       shiny.huge.detailDivElement("Gene full name:", matchingGene$name),
       shiny.huge.detailDivElement("Gene family:", matchingGene$gene_family),
       shiny.huge.detailDivElement("Gene description:", matchingGene$description),
-      shiny.huge.detailDivElement("Location type:", matchingGene$location_type),
+      shiny.huge.detailDivElement("Location type:", matchingGene$locus_type),
       shiny.huge.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
       tags$hr(),
       tags$b("Expression:"),
@@ -124,7 +124,7 @@ shinyServer(function(input, output, session) {
     gt <- gt[, .N, by = .(Symbol)]
     gt <- gt[order(N, decreasing = TRUE)]
 
-    matchingGeneIndices <- match(gt$Symbol, shiny.huge.geneTable$symbol)
+    matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
 
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
