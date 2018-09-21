@@ -114,6 +114,7 @@ shinyServer(function(input, output, session) {
 
     req(fullCallTable())
     req(input$selectedColumns)
+    req(input$minSamplePercentage)
 
     ct <- fullCallTable()
 
@@ -129,6 +130,11 @@ shinyServer(function(input, output, session) {
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
+
+    numberOfSamples <- length(unique(ct$Sample))
+
+    gt <- gt[N * 100 / numberOfSamples >= input$minSamplePercentage]
+    ct <- ct[Symbol %in% gt$Symbol]
 
     geneTable(gt)
     filteredCallTable(ct)
