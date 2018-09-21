@@ -28,7 +28,8 @@ cranPackages <- c(
   "httr",
   "ggplot2",
   "htmlwidgets",
-  "DT"
+  "DT",
+  "xml2"
 )
 
 biocPackages <- c(

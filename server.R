@@ -193,11 +193,11 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$openReactomeButton, {
 
-    req(filteredCallTable())
-    req(filteredCallTable()$symbol)
+    req(geneTable())
 
-    hgncGenes <- unique(filteredCallTable()$symbol)
-    hgncGenes <- hgncGenes[hgncGenes != "NULL"]
+    hgncSymbolIndices <- shiny.huge.symbolToIndexMap[[geneTable()$Symbol]]
+
+    hgncGenes <- unique(shiny.huge.geneTable$symbol[hgncSymbolIndices])
 
     progress <- shiny::Progress$new()
     progress$set(message = paste("Opening reactome pathway overrepresenation link using", length(hgncGenes), "genes"), value = .5)
