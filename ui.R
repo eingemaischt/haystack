@@ -66,6 +66,15 @@ shinyUI(
               collapsible = TRUE,
               DT::dataTableOutput("geneTable")
             )
+          ),
+          fluidRow(
+            box(
+              width = 6,
+              solidHeader = TRUE,
+              title = "Download",
+              downloadButton("geneDownload", label = "Download table"),
+              footer = "This download contains the filtered genes only."
+            )
           )
         ),
         tabItem(tabName = "annotationTab",

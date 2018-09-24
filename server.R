@@ -130,6 +130,7 @@ shinyServer(function(input, output, session) {
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
+    gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
     expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
 
@@ -162,6 +163,8 @@ shinyServer(function(input, output, session) {
                         )))
   })
 
+  ### GENE TABLE TAB
+
   output$geneTable <- DT::renderDataTable({
     req(geneTable())
 
@@ -171,6 +174,13 @@ shinyServer(function(input, output, session) {
                          class = DT:::DT2BSClass(c("hover", "stripe")))
     )
   })
+
+  output$geneDownload <- downloadHandler(
+    filename = "genes.csv",
+    content = function (con) write.csv(geneTable(), file = con, row.names = FALSE)
+  )
+
+  ### ANNOTATION TABLE TAB
 
   output$annotationTable <- DT::renderDataTable(DT::datatable(shiny.huge.geneTable,
                          selection = "single",
