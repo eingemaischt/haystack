@@ -101,12 +101,16 @@ shinyServer(function(input, output, session) {
 
     req(ct)
 
+    numberOfSamples <- length(unique(ct$Sample))
+    consequences <- unique(unlist(strsplit(ct$Consequence, ",")))
+
     updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
-    updateSliderInput(session, "samplePercentage", value = c(0, 100))
+    updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
     updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
     updateSelectizeInput(session, "expressions", selected = NULL)
+    updateSelectInput(session, "consequences", selected = NULL, choices = consequences)
 
     fullCallTable(ct)
 
@@ -117,7 +121,7 @@ shinyServer(function(input, output, session) {
 
     req(fullCallTable())
     req(input$selectedColumns)
-    req(input$samplePercentage)
+    req(input$sampleNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
 
@@ -129,7 +133,8 @@ shinyServer(function(input, output, session) {
     ct <- ct[
       (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
       `Read depth` >= input$minReadDepth &
-      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)),
+      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
+      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
       input$selectedColumns, with = FALSE
     ]
 
@@ -139,11 +144,6 @@ shinyServer(function(input, output, session) {
     gt <- gt[order(samples, decreasing = TRUE)]
 
     matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
-
-    numberOfSamples <- length(unique(ct$Sample))
-    percentages <- gt$samples * 100 / numberOfSamples
-
-    gt$percentages <- round(percentages, digits = 2)
 
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
@@ -155,8 +155,8 @@ shinyServer(function(input, output, session) {
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
 
     gt <- gt[
-      input$samplePercentage[1] <= percentages &
-      input$samplePercentage[2] >= percentages &
+      input$sampleNumber[1] <= samples &
+      input$sampleNumber[2] >= samples &
       (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
     ]
     ct <- ct[Symbol %in% gt$Symbol]
