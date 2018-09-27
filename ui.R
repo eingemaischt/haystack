@@ -8,7 +8,7 @@ shinyUI(
         menuItem("Genes", tabName = "geneTab", icon = icon("leaf")),
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
-        numericInput("minSamplePercentage",  label = "Minimum percentage of samples affected", min = 0, max = 100, value = 0, step = 1),
+        sliderInput("samplePercentage",  label = "Percentage of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         hr(),
         fluidPage(

@@ -114,7 +114,7 @@ shinyServer(function(input, output, session) {
 
     req(fullCallTable())
     req(input$selectedColumns)
-    req(input$minSamplePercentage)
+    req(input$samplePercentage)
 
     ct <- fullCallTable()
 
@@ -135,9 +135,15 @@ shinyServer(function(input, output, session) {
     expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
-    numberOfSamples <- length(unique(ct$Sample))
 
-    gt <- gt[N * 100 / numberOfSamples >= input$minSamplePercentage & (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)]
+    numberOfSamples <- length(unique(ct$Sample))
+    percentages <- gt$N * 100 / numberOfSamples
+
+    gt <- gt[
+      input$samplePercentage[1] <= percentages &
+      input$samplePercentage[2] >= percentages &
+      (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
+    ]
     ct <- ct[Symbol %in% gt$Symbol]
 
     geneTable(gt)
