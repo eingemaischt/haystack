@@ -9,6 +9,8 @@ shinyUI(
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
         sliderInput("samplePercentage",  label = "Percentage of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
+        sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 100, value = 0),
+        sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 100, value = 0),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         hr(),
         fluidPage(

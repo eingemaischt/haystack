@@ -102,7 +102,9 @@ shinyServer(function(input, output, session) {
     req(ct)
 
     updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
-    updateNumericInput(session, "minSamplePercentage", value = 0)
+    updateSliderInput(session, "samplePercentage", value = c(0, 100))
+    updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
+    updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
     updateSelectizeInput(session, "expressions", selected = NULL)
 
     fullCallTable(ct)
@@ -115,10 +117,16 @@ shinyServer(function(input, output, session) {
     req(fullCallTable())
     req(input$selectedColumns)
     req(input$samplePercentage)
+    req(input$minReadDepth)
+    req(input$minVariantDepth)
 
     ct <- fullCallTable()
 
-    ct <- ct[,input$selectedColumns, with = FALSE]
+    ct <- ct[
+      `Read depth` >= input$minReadDepth &
+      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)),
+      input$selectedColumns, with = FALSE
+    ]
 
     # count mutations per gene per sample by multiple aggregations
     gt <- ct[, .N, by = .(Symbol, Sample)]
