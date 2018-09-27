@@ -105,6 +105,7 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "samplePercentage", value = c(0, 100))
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
+    updateSelectInput(session, "compoundHeterozygosity", selected = "ANY")
     updateSelectizeInput(session, "expressions", selected = NULL)
 
     fullCallTable(ct)
@@ -119,21 +120,31 @@ shinyServer(function(input, output, session) {
     req(input$samplePercentage)
     req(input$minReadDepth)
     req(input$minVariantDepth)
+    req(input$compoundHeterozygosity)
 
     ct <- fullCallTable()
 
+    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
+    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
+
     ct <- ct[
+      (input$compoundHeterozygosity == "ANY" | (input$compoundHeterozygosity == sampleSymbolDuplicates)) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)),
       input$selectedColumns, with = FALSE
     ]
 
     # count mutations per gene per sample by multiple aggregations
-    gt <- ct[, .N, by = .(Symbol, Sample)]
-    gt <- gt[, .N, by = .(Symbol)]
-    gt <- gt[order(N, decreasing = TRUE)]
+    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
+    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
+    gt <- gt[order(samples, decreasing = TRUE)]
 
     matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
+
+    numberOfSamples <- length(unique(ct$Sample))
+    percentages <- gt$samples * 100 / numberOfSamples
+
+    gt$percentages <- round(percentages, digits = 2)
 
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
@@ -143,9 +154,6 @@ shinyServer(function(input, output, session) {
     expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
-
-    numberOfSamples <- length(unique(ct$Sample))
-    percentages <- gt$N * 100 / numberOfSamples
 
     gt <- gt[
       input$samplePercentage[1] <= percentages &
