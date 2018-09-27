@@ -63,7 +63,7 @@ shiny.huge.symbolToIndexMap <- (function () {
   secondaryNames <- c(splitAliases, splitPrevSymbols)
   secondaryIndices <- c(aliasIndices, prevIndices)
 
-  validIndices <- !duplicated(secondaryNames) & !secondaryNames %in% shiny.huge.geneTable$symbol
+  validIndices <- !(duplicated(secondaryNames) | duplicated(secondaryNames, fromLast = TRUE)) & !secondaryNames %in% shiny.huge.geneTable$symbol
 
   secondaryKeys <- secondaryNames[validIndices]
   secondaryValues <- secondaryIndices[validIndices]
