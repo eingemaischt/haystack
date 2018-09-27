@@ -105,7 +105,7 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "samplePercentage", value = c(0, 100))
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
-    updateSelectInput(session, "compoundHeterozygosity", selected = "ANY")
+    updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
     updateSelectizeInput(session, "expressions", selected = NULL)
 
     fullCallTable(ct)
@@ -120,7 +120,6 @@ shinyServer(function(input, output, session) {
     req(input$samplePercentage)
     req(input$minReadDepth)
     req(input$minVariantDepth)
-    req(input$compoundHeterozygosity)
 
     ct <- fullCallTable()
 
@@ -128,7 +127,7 @@ shinyServer(function(input, output, session) {
     sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
 
     ct <- ct[
-      (input$compoundHeterozygosity == "ANY" | (input$compoundHeterozygosity == sampleSymbolDuplicates)) &
+      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)),
       input$selectedColumns, with = FALSE
