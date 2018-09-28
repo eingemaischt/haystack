@@ -12,7 +12,13 @@ shinyUI(
         sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 100, value = 0),
         sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 100, value = 0),
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
-        checkboxInput("onlyCompoundHeterozygosity", label = "Compound heterozygosity only", value = FALSE),
+        checkboxGroupInput("genotypes", label = "Genotype", choices = list(
+          "unknown" = "unknown",
+          "homozygous ref" = "hom_ref",
+          "heterozygous" = "het",
+          "homozygous alt" = "hom_alt"
+        ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
+        checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         hr(),

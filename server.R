@@ -108,6 +108,7 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
+    updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
     updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
     updateNumericInput(session, "maxAFPopmax", value = 100)
     updateSelectizeInput(session, "expressions", selected = NULL)
@@ -146,6 +147,12 @@ shinyServer(function(input, output, session) {
 
     ct <- ct[
       (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
+      (
+        ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
+        ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
+        ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
+        ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
+      ) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
       (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
