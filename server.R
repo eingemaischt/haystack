@@ -131,62 +131,6 @@ shinyServer(function(input, output, session) {
 
   })
 
-  observe({
-
-    req(fullCallTable())
-    req(input$selectedColumns)
-    req(input$sampleNumber)
-    req(input$minReadDepth)
-    req(input$minVariantDepth)
-    req(input$maxAFPopmax)
-
-    ct <- fullCallTable()
-
-    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
-    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
-
-    ct <- ct[
-      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
-      (
-        ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
-        ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
-        ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
-        ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
-      ) &
-      `Read depth` >= input$minReadDepth &
-      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
-      (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
-      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
-      input$selectedColumns, with = FALSE
-    ]
-
-    # count mutations per gene per sample by multiple aggregations
-    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
-    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
-    gt <- gt[order(samples, decreasing = TRUE)]
-
-    matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
-
-    gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
-    gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
-    gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
-    gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
-
-    expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
-
-    ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
-
-    gt <- gt[
-      input$sampleNumber[1] <= samples &
-      input$sampleNumber[2] >= samples &
-      (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
-    ]
-    ct <- ct[Symbol %in% gt$Symbol]
-
-    geneTable(gt)
-    filteredCallTable(ct)
-  })
-
   output$callTable <- DT::renderDataTable({
 
     req(filteredCallTable())
@@ -293,4 +237,64 @@ shinyServer(function(input, output, session) {
   observeEvent(input$modalOkBtn, {
     removeModal()
   })
+
+  ### FILTERING
+
+
+  observe({
+
+    req(fullCallTable())
+    req(input$selectedColumns)
+    req(input$sampleNumber)
+    req(input$minReadDepth)
+    req(input$minVariantDepth)
+    req(input$maxAFPopmax)
+
+    ct <- fullCallTable()
+
+    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
+    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
+
+    ct <- ct[
+      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
+        (
+          ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
+          ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
+          ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
+          ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
+        ) &
+        `Read depth` >= input$minReadDepth &
+        (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
+        (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
+        (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
+      input$selectedColumns, with = FALSE
+      ]
+
+    # count mutations per gene per sample by multiple aggregations
+    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
+    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
+    gt <- gt[order(samples, decreasing = TRUE)]
+
+    matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
+
+    gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
+    gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
+    gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
+    gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
+
+    expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
+
+    ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
+
+    gt <- gt[
+      input$sampleNumber[1] <= samples &
+        input$sampleNumber[2] >= samples &
+        (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
+      ]
+    ct <- ct[Symbol %in% gt$Symbol]
+
+    geneTable(gt)
+    filteredCallTable(ct)
+  })
+
 })
