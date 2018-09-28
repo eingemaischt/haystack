@@ -109,6 +109,7 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
     updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
+    updateNumericInput(session, "maxAFPopmax", value = 100)
     updateSelectizeInput(session, "expressions", selected = NULL)
     updateSelectInput(session, "consequences", selected = NULL, choices = consequences)
 
@@ -119,11 +120,24 @@ shinyServer(function(input, output, session) {
 
   observe({
 
+    maxPopMax <- input$maxAFPopmax
+
+    if (is.na(maxPopMax)) {
+      showNotification("Invalid number in AF Popmax filter", closeButton = FALSE, type = "error", duration = NULL, id = "popmaxError")
+    } else {
+      removeNotification("popmaxError")
+    }
+
+  })
+
+  observe({
+
     req(fullCallTable())
     req(input$selectedColumns)
     req(input$sampleNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
+    req(input$maxAFPopmax)
 
     ct <- fullCallTable()
 
@@ -134,6 +148,7 @@ shinyServer(function(input, output, session) {
       (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
+      (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
       (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
       input$selectedColumns, with = FALSE
     ]
