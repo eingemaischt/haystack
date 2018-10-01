@@ -85,6 +85,8 @@ shinyServer(function(input, output, session) {
   filteredCallTable <- reactiveVal()
 
   geneTable <- reactiveVal()
+  comparedGenes <- reactiveVal()
+  geneComparisonTable <- reactiveVal()
 
   dtInstance <- reactiveVal()
 
@@ -184,6 +186,46 @@ shinyServer(function(input, output, session) {
                            )))
                          )))
 
+  ### GENE COMPARISON TAB
+
+  observeEvent(input$geneComparisonListUpload, {
+
+    req(input$geneComparisonListUpload)
+
+    comparedGenes(readLines(input$geneComparisonListUpload$datapath))
+
+  })
+
+  observe({
+
+    req(comparedGenes())
+    req(geneTable())
+
+    ourSymbols <- geneTable()$Symbol
+    theirSymbols <- comparedGenes()
+
+    ourIndices <- shiny.huge.symbolToIndexMap[[ourSymbols]]
+    theirIndices <- shiny.huge.symbolToIndexMap[[theirSymbols]]
+
+    onlyOurIndices <- setdiff(ourIndices, theirIndices)
+    intersectingIndices <- intersect(ourIndices, theirIndices)
+    onlyTheirIndices <- setdiff(theirIndices, ourIndices)
+
+    output$ourSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[ourIndices], collapse = "\n"))
+    output$intersectingSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[intersectingIndices], collapse = "\n"))
+    output$theirSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[theirIndices], collapse = "\n"))
+
+    output$geneComparisonVenn <- renderPlot({
+
+      venn <- venn.diagram(list(
+        our_symbols = ourIndices,
+        their_symbols = theirIndices
+      ), filename = NULL, na = "remove")
+
+      grid.draw(venn)
+    })
+  })
+
   ### SIDEBAR
 
   output$numTotalRows    <- renderText({ paste("Total calls in table: ",    nrow(fullCallTable())) })
@@ -239,7 +281,6 @@ shinyServer(function(input, output, session) {
   })
 
   ### FILTERING
-
 
   observe({
 

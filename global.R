@@ -29,6 +29,7 @@ cranPackages <- c(
   "ggplot2",
   "htmlwidgets",
   "DT",
+  "VennDiagram",
   "xml2"
 )
 
@@ -49,5 +50,8 @@ for (package in biocPackages) {
   loadOrInstall(package, type = "bioc")
 
 }
+
+# Prevent VennDiagram package from writing a log file each time it is called
+futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 source("annotation.R")

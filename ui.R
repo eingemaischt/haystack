@@ -6,6 +6,7 @@ shinyUI(
       sidebarMenu(
         menuItem("Call table", tabName = "callTableTab", icon = icon("th-list")),
         menuItem("Genes", tabName = "geneTab", icon = icon("leaf")),
+        menuItem("Gene comparison", tabName = "geneComparisonTab", icon = icon("refresh")),
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
         sliderInput("sampleNumber",  label = "Number of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
@@ -100,6 +101,43 @@ shinyUI(
               solidHeader = TRUE,
               footer = "This window shows the annotation data used for this app, it is extracted from the HGNC.",
               DT::dataTableOutput("annotationTable")
+            )
+          )
+        ),
+        tabItem(tabName = "geneComparisonTab",
+          fluidRow(
+            box(
+              width = 12,
+              title = "Venn Diagram",
+              plotOutput("geneComparisonVenn")
+            )
+          ),
+          fluidRow(
+            box(
+              width = 4,
+              style = "overflow-y: scroll; max-height: 400px",
+              title = "Symbols only in our data",
+              verbatimTextOutput("ourSymbols")
+            ),
+            box(
+              width = 4,
+              style = "overflow-y: scroll; max-height: 400px",
+              title = "Intersecting symbols",
+              verbatimTextOutput("intersectingSymbols")
+            ),
+            box(
+              width = 4,
+              style = "overflow-y: scroll; max-height: 400px",
+              title = "Symbols only in their data",
+              verbatimTextOutput("theirSymbols")
+            )
+          ),
+          fluidRow(
+            box(
+              width = 6,
+              title = "Gene List Upload",
+              footer = "You can upload a gene list here to compare to the genes found in the variant table. Every line must contain exactly one HGNC symbol.",
+              fileInput("geneComparisonListUpload", label = "Upload genes for comparison")
             )
           )
         ),
