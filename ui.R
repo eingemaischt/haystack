@@ -35,7 +35,10 @@ shinyUI(
     ),
     dashboardBody(
       tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+        tags$style(
+          HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
+        )
       ),
       tabItems(
         tabItem(tabName = "callTableTab",
