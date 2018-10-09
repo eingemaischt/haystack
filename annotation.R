@@ -7,7 +7,6 @@ library(hashmap)
 shiny.huge.martMirror <- "www.ensembl.org"
 shiny.huge.allowedLevels <- c("High", "Medium", "Low")
 shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-shiny.huge.minTPMLevel <- 0.1
 
 # data("hpaNormalTissue")
 # data("rnaGeneTissue")
@@ -18,20 +17,25 @@ shiny.huge.minTPMLevel <- 0.1
 
 # shiny.huge.rnaExpressions <- as.data.table(rnaGeneTissue[rnaGeneTissue$Value >= shiny.huge.minTPMLevel,])
 
-shiny.huge.gtexExpression <- (function() {
+shiny.huge.loadGtexExpressions <- function (normalizationFn, globalVariableName, minTPM) {
 
-  if (exists("shiny.huge.gtexExpression")) return(shiny.huge.gtexExpression)
+  if (exists(globalVariableName)) return(get(globalVariableName))
 
   gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
   gtexData <- fread(gtexFile, stringsAsFactors = FALSE)
+  gtexData[, 3:ncol(gtexData)] <- data.table(t(apply(gtexData[,-(1:2)], 1, normalizationFn)))
   gtexData <- melt(gtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
   gtexData$tissue <- tolower(gtexData$tissue)
 
   # convert "ENSG00000235373.1" to "ENSG00000235373"
   gtexData$gene_id <- sapply(strsplit(gtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
 
-  return(gtexData[tpm > shiny.huge.minTPMLevel])
-})()
+  return(gtexData)
+
+}
+
+shiny.huge.gtexExpressionRaw <- shiny.huge.loadGtexExpressions(function (x) x, "shiny.huge.gtexExpression")
+shiny.huge.gtexExpressionScaled <- shiny.huge.loadGtexExpressions(scales::rescale, "shiny.huge.gtexExpressionScaled")
 
 shiny.huge.geneTable <- (function () {
 
@@ -129,7 +133,7 @@ shiny.huge.queryExpressionAnnotations <- function (ensemblStrings) {
 
     # normalExpressions <- shiny.huge.normalExpressions[shiny.huge.normalExpressions$Gene %in% ids, c("Tissue", "Level")]
     # rnaGeneExpressions <- shiny.huge.rnaExpressions[shiny.huge.rnaExpressions$Gene %in% ids, c("Sample", "Value")]
-    gtexExpressions <- shiny.huge.gtexExpression[shiny.huge.gtexExpression$gene_id %in% ids, c("tissue", "tpm")]
+    gtexExpressions <- shiny.huge.gtexExpressionRaw[shiny.huge.gtexExpressionRaw$gene_id %in% ids, c("tissue", "tpm")]
 
     # colnames(normalExpressions) <- targetColnames
     # colnames(rnaGeneExpressions) <- targetColnames

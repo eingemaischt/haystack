@@ -323,7 +323,7 @@ shinyServer(function(input, output, session) {
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
     gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
-    expressionFilteredGenes <- shiny.huge.gtexExpression[tissue %in% input$expressions]
+    expressionFilteredGenes <- shiny.huge.gtexExpressionRaw[tissue %in% input$expressions]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
 

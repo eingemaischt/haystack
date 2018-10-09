@@ -20,7 +20,7 @@ shinyUI(
           "homozygous alt" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
+        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpressionRaw$tissue)),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         hr(),
         fluidPage(
