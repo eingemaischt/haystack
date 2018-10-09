@@ -45,11 +45,7 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
 
     selectedRow <- callTableReactiveVal()[row_selection]
 
-    matchingGene <- shiny.huge.geneTable[
-      symbol == selectedRow$Symbol |
-        grepl(selectedRow$Symbol, prev_symbol) |
-        grepl(selectedRow$Symbol, alias_symbol)
-      ]
+    matchingGene <- shiny.huge.geneTable[shiny.huge.symbolToIndexMap[[selectedRow$Symbol]]]
 
     showModal(modalDialog(
       shiny.huge.detailDivElement("Location:", matchingGene$location),
