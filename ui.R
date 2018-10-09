@@ -12,8 +12,9 @@ shinyUI(
         sliderInput("sampleNumber",  label = "Number of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
         sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 100, value = 0),
         sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 100, value = 0),
+        sliderInput("scaledTPM", label = "Scaled Expression TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
+        numericInput("minRawTPM", label = "Minimum Expression TPM value", min = 0, max = max(shiny.huge.gtexExpression$tpm), value = 0),
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
-        numericInput("minRawTPM", label = "Minimum Expression TPM value", min = 0, max = max(shiny.huge.gtexExpressionRaw$tpm), value = 0),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
           "homozygous ref" = "hom_ref",
@@ -21,7 +22,7 @@ shinyUI(
           "homozygous alt" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpressionRaw$tissue)),
+        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         hr(),
         fluidPage(

@@ -12,7 +12,7 @@ shiny.huge.detailDivElement <- function (label, value) {
 shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
   return(renderPlot(
-    ggplot(expressions, aes(x = reorder(tissue, value, FUN = max), y = value, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
+    ggplot(expressions, aes(x = reorder(tissue, tpm, FUN = max), y = tpm, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
       geom_col() +
       coord_flip() +
       ggtitle(title) +
@@ -71,20 +71,9 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
       easyClose = TRUE
     ))
 
-    expression <- shiny.huge.queryExpressionAnnotations(matchingGene$ensembl_gene_id)[[1]]
-    # workaround for 'max' not working properly for factors in data.table
-    # see: https://github.com/Rdatatable/data.table/issues/1947
-    maxFixFn <- max
-    expression <- lapply(expression, function (expr) {
+    expression <- shiny.huge.gtexExpression[gene_id %in% matchingGene$ensembl_gene_id]
 
-      if (nrow(expr) == 0) return(expr)
-
-      expr[,list(value = maxFixFn(value)), by = "tissue"]
-    })
-
-    #output$modalNormalExpression <- shiny.huge.modalExpressionPlot(expression$normal, input$expressions, paste(selectedRow$RSID, "HPA immunohistochemistry data", sep = ": "))
-    #output$modalRnaExpression <- shiny.huge.modalExpressionPlot(expression$rna, input$expressions, paste(selectedRow$RSID, "HPA RNA-seq data", sep = ": "))
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(expression$gtex, input$expressions, paste(selectedRow$Symbol, "GTEx data", sep = ": "))
+    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(expression, input$expressions, paste(selectedRow$Symbol, "GTEx data", sep = ": "))
   })
 
 }
@@ -120,6 +109,7 @@ shinyServer(function(input, output, session) {
     updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
     updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
     updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
+    updateSliderInput(session, "scaledTPM", value = c(0,1))
     updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
     updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
     updateNumericInput(session, "maxAFPopmax", value = 100)
@@ -300,6 +290,7 @@ shinyServer(function(input, output, session) {
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
     req(input$minRawTPM)
+    req(input$scaledTPM)
 
     ct <- fullCallTable()
 
@@ -333,7 +324,11 @@ shinyServer(function(input, output, session) {
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
     gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
-    expressionFilteredGenes <- shiny.huge.gtexExpressionRaw[tpm >= input$minRawTPM & tissue %in% input$expressions]
+    expressionFilteredGenes <- shiny.huge.gtexExpression[
+      tpm >= input$minRawTPM &
+      tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
+      tissue %in% input$expressions
+    ]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
 

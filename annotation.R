@@ -17,25 +17,28 @@ shiny.huge.allowedReliabilities <- c("Approved", "Supported")
 
 # shiny.huge.rnaExpressions <- as.data.table(rnaGeneTissue[rnaGeneTissue$Value >= shiny.huge.minTPMLevel,])
 
-shiny.huge.loadGtexExpressions <- function (normalizationFn, globalVariableName, minTPM) {
 
-  if (exists(globalVariableName)) return(get(globalVariableName))
+shiny.huge.gtexExpression <- (function () {
+
+  if (exists("shiny.huge.gtexExpression")) return(shiny.huge.gtexExpression)
 
   gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
-  gtexData <- fread(gtexFile, stringsAsFactors = FALSE)
-  gtexData[, 3:ncol(gtexData)] <- data.table(t(apply(gtexData[,-(1:2)], 1, normalizationFn)))
-  gtexData <- melt(gtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
-  gtexData$tissue <- tolower(gtexData$tissue)
 
+  rawGtexData <- fread(gtexFile, stringsAsFactors = FALSE)
   # convert "ENSG00000235373.1" to "ENSG00000235373"
-  gtexData$gene_id <- sapply(strsplit(gtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
+  rawGtexData$gene_id <- sapply(strsplit(rawGtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
 
-  return(gtexData[tpm > 0])
+  scaledGtexData <- rawGtexData
+  scaledGtexData[, 3:ncol(scaledGtexData)] <- data.table(t(apply(scaledGtexData[,-(1:2)], 1, function (x) x / max(x))))
 
-}
+  rawGtexData <- melt(rawGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
+  scaledGtexData <- melt(scaledGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_scaled")
 
-shiny.huge.gtexExpressionRaw <- shiny.huge.loadGtexExpressions(function (x) x, "shiny.huge.gtexExpressionRaw")
-shiny.huge.gtexExpressionScaled <- shiny.huge.loadGtexExpressions(function (x) x / max(x), "shiny.huge.gtexExpressionScaled")
+  combined <- merge(rawGtexData, scaledGtexData)
+
+  return(combined[tpm > 0])
+
+})()
 
 shiny.huge.geneTable <- (function () {
 
@@ -123,28 +126,4 @@ shiny.huge.annotateFromEntrez <- function (hgncSymbols) {
   summaries <- summaries[nchar(summaries$gene) > 0,]
 
   return(merge(summaries, data.frame(gene = hgncSymbols)))
-}
-
-shiny.huge.queryExpressionAnnotations <- function (ensemblStrings) {
-
-  expressions <- lapply(ensemblStrings, function (ids) {
-
-    targetColnames <- c("tissue", "value")
-
-    # normalExpressions <- shiny.huge.normalExpressions[shiny.huge.normalExpressions$Gene %in% ids, c("Tissue", "Level")]
-    # rnaGeneExpressions <- shiny.huge.rnaExpressions[shiny.huge.rnaExpressions$Gene %in% ids, c("Sample", "Value")]
-    gtexExpressions <- shiny.huge.gtexExpressionRaw[shiny.huge.gtexExpressionRaw$gene_id %in% ids, c("tissue", "tpm")]
-
-    # colnames(normalExpressions) <- targetColnames
-    # colnames(rnaGeneExpressions) <- targetColnames
-    colnames(gtexExpressions) <- targetColnames
-
-    return(list(
-      # normal = normalExpressions,
-      # rna    = rnaGeneExpressions,
-      gtex   = gtexExpressions
-    ))
-  })
-
-  return(expressions)
 }
