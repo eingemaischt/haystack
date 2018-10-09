@@ -12,7 +12,7 @@ shiny.huge.detailDivElement <- function (label, value) {
 shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
   return(renderPlot(
-    ggplot(expressions, aes(x = reorder(tissue, tpm, FUN = max), y = tpm, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
+    ggplot(expressions, aes(x = reorder(tissue, value, FUN = max), y = value, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
       geom_col() +
       coord_flip() +
       ggtitle(title) +
@@ -63,7 +63,8 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
-        tabPanel("GTEx tissues", plotOutput("modalGTExExpression", height = "640px"))
+        tabPanel("GTEx tissues (TPM)", plotOutput("modalGTExExpression", height = "640px")),
+        tabPanel("GTex tissues (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px"))
       ),
       title = "Details",
       footer = actionButton("modalOkBtn", label = "OK", icon = icon("ok")),
@@ -73,7 +74,11 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
 
     expression <- shiny.huge.gtexExpression[gene_id %in% matchingGene$ensembl_gene_id]
 
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(expression, input$expressions, paste(selectedRow$Symbol, "GTEx data", sep = ": "))
+    rawValues <- expression[,list(tissue = tissue, value = tpm)]
+    scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
+
+    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawValues, input$expressions, paste(selectedRow$Symbol, "GTEx data (raw TPM)", sep = ": "))
+    output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledValues, input$expressions, paste(selectedRow$Symbol, "GTEx data (scaled TPM)", sep = ": "))
   })
 
 }
