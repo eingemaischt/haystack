@@ -27,6 +27,16 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
 
 }
 
+shiny.huge.handleErrorNotification <- function (value, filterName, notificationId) {
+
+  if (is.na(value)) {
+    showNotification(paste0("Invalid number in ", filterName, " filter"), closeButton = FALSE, type = "error", duration = NULL, id = notificationId)
+  } else {
+    removeNotification(notificationId)
+  }
+
+}
+
 shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection, input, output) {
 
   return({
@@ -113,6 +123,7 @@ shinyServer(function(input, output, session) {
     updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
     updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
     updateNumericInput(session, "maxAFPopmax", value = 100)
+    updateNumericInput(session, "minRawTPM", value = 0)
     updateSelectizeInput(session, "expressions", selected = NULL)
     updateSelectInput(session, "consequences", selected = NULL, choices = consequences)
 
@@ -124,12 +135,10 @@ shinyServer(function(input, output, session) {
   observe({
 
     maxPopMax <- input$maxAFPopmax
+    minRawTPM <- input$minRawTPM
 
-    if (is.na(maxPopMax)) {
-      showNotification("Invalid number in AF Popmax filter", closeButton = FALSE, type = "error", duration = NULL, id = "popmaxError")
-    } else {
-      removeNotification("popmaxError")
-    }
+    shiny.huge.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
+    shiny.huge.handleErrorNotification(minRawTPM, "minimum TPM", "minRawTPMErrorNotification")
 
   })
 
@@ -290,6 +299,7 @@ shinyServer(function(input, output, session) {
     req(input$minReadDepth)
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
+    req(input$minRawTPM)
 
     ct <- fullCallTable()
 
@@ -323,7 +333,7 @@ shinyServer(function(input, output, session) {
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
     gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
-    expressionFilteredGenes <- shiny.huge.gtexExpressionRaw[tissue %in% input$expressions]
+    expressionFilteredGenes <- shiny.huge.gtexExpressionRaw[tpm >= input$minRawTPM & tissue %in% input$expressions]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
 

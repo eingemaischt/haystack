@@ -13,6 +13,7 @@ shinyUI(
         sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 100, value = 0),
         sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 100, value = 0),
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
+        numericInput("minRawTPM", label = "Minimum Expression TPM value", min = 0, max = max(shiny.huge.gtexExpressionRaw$tpm), value = 0),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
           "homozygous ref" = "hom_ref",

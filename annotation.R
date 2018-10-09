@@ -30,12 +30,12 @@ shiny.huge.loadGtexExpressions <- function (normalizationFn, globalVariableName,
   # convert "ENSG00000235373.1" to "ENSG00000235373"
   gtexData$gene_id <- sapply(strsplit(gtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
 
-  return(gtexData)
+  return(gtexData[tpm > 0])
 
 }
 
-shiny.huge.gtexExpressionRaw <- shiny.huge.loadGtexExpressions(function (x) x, "shiny.huge.gtexExpression")
-shiny.huge.gtexExpressionScaled <- shiny.huge.loadGtexExpressions(scales::rescale, "shiny.huge.gtexExpressionScaled")
+shiny.huge.gtexExpressionRaw <- shiny.huge.loadGtexExpressions(function (x) x, "shiny.huge.gtexExpressionRaw")
+shiny.huge.gtexExpressionScaled <- shiny.huge.loadGtexExpressions(function (x) x / max(x), "shiny.huge.gtexExpressionScaled")
 
 shiny.huge.geneTable <- (function () {
 
