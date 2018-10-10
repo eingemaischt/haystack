@@ -11,6 +11,8 @@ shiny.huge.detailDivElement <- function (label, value) {
 
 shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
+  if (nrow(expressions) == 0) return(renderText("No values found."))
+
   return(renderPlot(
     ggplot(expressions, aes(x = reorder(tissue, value, FUN = max), y = value, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
       geom_col() +
@@ -372,13 +374,13 @@ shinyServer(function(input, output, session) {
     expressionFilteredGenes <- shiny.huge.gtexExpression[
       tpm >= input$minRawTPM &
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
-      (is.null(input$expressions) | tissue %in% input$expressions)
+      tissue %in% input$expressions
     ]
 
     gt <- gt[
       input$patientNumber[1] <= patients &
       input$patientNumber[2] >= patients &
-      matchingGeneNames %in% expressionFilteredGenes$symbol
+      (is.null(input$expressions) | matchingGeneNames %in% expressionFilteredGenes$symbol)
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
