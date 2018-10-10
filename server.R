@@ -59,7 +59,12 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       tabsetPanel(
         tabPanel("GTEx tissues (TPM)", plotOutput("modalGTExExpression", height = "640px")),
         tabPanel("GTex tissues (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
-        tabPanel("Mutation types", tableOutput("modalMutationTypes"))
+        tabPanel("Mutation types", tags$div(
+          style = "overflow-x: scroll",
+          tags$h5(paste0("Mutations for ", selectedSymbol), ":"),
+          tableOutput("modalMutationTypes")
+          )
+        )
       ),
       title = "Details",
       footer = actionButton("modalOkBtn", label = "OK", icon = icon("ok")),
@@ -73,11 +78,14 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
 
     callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
-    uniqueMutations <- callsInGene[, .N, by = HGVSc]
+    uniqueMutations <- callsInGene[,
+      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Samples" = .N),
+      by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
+    ]
 
     output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
     output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
-    output$modalMutationTypes <- renderTable(uniqueMutations)
+    output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
 
   })
 
