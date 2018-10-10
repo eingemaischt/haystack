@@ -17,6 +17,7 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
       coord_flip() +
       ggtitle(title) +
       xlab("Tissue") +
+      ylim(c(0, NA)) +
       ylab("Expression value") +
       scale_fill_manual(values = c("TRUE" = "springgreen", "FALSE" = "steelblue")) +
       scale_colour_manual(values = c("TRUE" = "springgreen4", "FALSE" = "steelblue4")) +
@@ -72,7 +73,10 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       easyClose = TRUE
     ))
 
-    expression <- shiny.huge.gtexExpression[gene_id %in% matchingGene$ensembl_gene_id]
+    expression <- shiny.huge.gtexExpression[
+      gene_id %in% matchingGene$ensembl_gene_id &
+      tpm >= input$minRawTPM
+    ]
 
     rawValues <- expression[,list(tissue = tissue, value = tpm)]
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
@@ -360,7 +364,7 @@ shinyServer(function(input, output, session) {
     expressionFilteredGenes <- shiny.huge.gtexExpression[
       tpm >= input$minRawTPM &
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
-      tissue %in% input$expressions
+      (is.null(input$expressions) | tissue %in% input$expressions)
     ]
 
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
@@ -368,7 +372,7 @@ shinyServer(function(input, output, session) {
     gt <- gt[
       input$patientNumber[1] <= patients &
       input$patientNumber[2] >= patients &
-      (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
+      ensemblIDs %in% expressionFilteredGenes$gene_id
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
