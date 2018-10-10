@@ -18,28 +18,6 @@ shiny.huge.allowedReliabilities <- c("Approved", "Supported")
 # shiny.huge.rnaExpressions <- as.data.table(rnaGeneTissue[rnaGeneTissue$Value >= shiny.huge.minTPMLevel,])
 
 
-shiny.huge.gtexExpression <- (function () {
-
-  if (exists("shiny.huge.gtexExpression")) return(shiny.huge.gtexExpression)
-
-  gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
-
-  rawGtexData <- fread(gtexFile, stringsAsFactors = FALSE)
-  # convert "ENSG00000235373.1" to "ENSG00000235373"
-  rawGtexData$gene_id <- sapply(strsplit(rawGtexData$gene_id, ".", fixed = TRUE), function (components) components[1])
-
-  scaledGtexData <- rawGtexData
-  scaledGtexData[, 3:ncol(scaledGtexData)] <- data.table(t(apply(scaledGtexData[,-(1:2)], 1, function (x) x / max(x))))
-
-  rawGtexData <- melt(rawGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
-  scaledGtexData <- melt(scaledGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_scaled")
-
-  combined <- merge(rawGtexData, scaledGtexData)
-
-  return(combined[tpm > 0])
-
-})()
-
 shiny.huge.geneTable <- (function () {
 
   hgncTable <- fread("hgnc_complete_set.txt")
@@ -56,19 +34,22 @@ shiny.huge.symbolToIndexMap <- (function () {
 
   symbolMap <- hashmap(shiny.huge.geneTable$symbol, seq_along(shiny.huge.geneTable$symbol))
 
+  uppercaseSymbols <- toupper(shiny.huge.geneTable$symbol)
+  uppercaseIndices <- seq_along(uppercaseSymbols)
+
   splitAliases <- strsplit(shiny.huge.geneTable$alias_symbol, "|", fixed = TRUE)
   splitPrevSymbols <- strsplit(shiny.huge.geneTable$prev_symbol, "|", fixed = TRUE)
 
   aliasIndices <- lapply(seq_along(splitAliases), function (i) rep(i, length(splitAliases[[i]])))
   prevIndices <- lapply(seq_along(splitPrevSymbols), function (i) rep(i, length(splitPrevSymbols[[i]])))
 
-  splitAliases <- unlist(splitAliases)
-  splitPrevSymbols <- unlist(splitPrevSymbols)
+  splitAliases <- toupper(unlist(splitAliases))
+  splitPrevSymbols <- toupper(unlist(splitPrevSymbols))
   aliasIndices <- unlist(aliasIndices)
   prevIndices <- unlist(prevIndices)
 
-  secondaryNames <- c(splitAliases, splitPrevSymbols)
-  secondaryIndices <- c(aliasIndices, prevIndices)
+  secondaryNames <- c(uppercaseSymbols, splitAliases, splitPrevSymbols)
+  secondaryIndices <- c(uppercaseIndices, aliasIndices, prevIndices)
 
   validIndices <- !(duplicated(secondaryNames) | duplicated(secondaryNames, fromLast = TRUE)) & !secondaryNames %in% shiny.huge.geneTable$symbol
 
@@ -78,6 +59,35 @@ shiny.huge.symbolToIndexMap <- (function () {
   symbolMap[[secondaryKeys]] <- secondaryValues
 
   return(symbolMap)
+})()
+
+shiny.huge.gtexExpression <- (function () {
+
+  if (exists("shiny.huge.gtexExpression")) return(shiny.huge.gtexExpression)
+
+  gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
+
+  rawGtexData <- fread(gtexFile, stringsAsFactors = FALSE)
+
+  scaledGtexData <- rawGtexData
+  scaledGtexData[, 3:ncol(scaledGtexData)] <- data.table(t(apply(scaledGtexData[,-(1:2)], 1, function (x) {
+
+    maxValue <- max(x)
+
+    if (maxValue == 0) return(rep(0, length(x)))
+
+    return(x / maxValue)
+
+  })))
+
+  rawGtexData <- melt(rawGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
+  scaledGtexData <- melt(scaledGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_scaled")
+
+  combined <- merge(rawGtexData, scaledGtexData)
+  combined$symbol <- shiny.huge.geneTable$symbol[shiny.huge.symbolToIndexMap[[combined$Description]]]
+
+  return(combined[tpm > 0 & !is.na(symbol)])
+
 })()
 
 shiny.huge.annotateFromEntrez <- function (hgncSymbols) {

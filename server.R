@@ -355,6 +355,7 @@ shinyServer(function(input, output, session) {
     gt <- gt[order(patients, decreasing = TRUE)]
 
     matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
+    matchingGeneNames <- shiny.huge.geneTable$symbol[matchingGeneIndices]
 
     gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
     gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
@@ -367,17 +368,16 @@ shinyServer(function(input, output, session) {
       (is.null(input$expressions) | tissue %in% input$expressions)
     ]
 
-    ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
-
     gt <- gt[
       input$patientNumber[1] <= patients &
       input$patientNumber[2] >= patients &
-      ensemblIDs %in% expressionFilteredGenes$gene_id
+      matchingGeneNames %in% expressionFilteredGenes$symbol
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
     geneTable(gt)
     filteredCallTable(ct)
+
   })
 
 })
