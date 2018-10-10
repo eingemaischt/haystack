@@ -74,7 +74,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     ))
 
     expression <- shiny.huge.gtexExpression[
-      gene_id %in% matchingGene$ensembl_gene_id &
+      symbol %in% matchingGene$symbol &
       tpm >= input$minRawTPM
     ]
 
@@ -147,6 +147,13 @@ shinyServer(function(input, output, session) {
     shiny.huge.resetFilters(session, ct)
 
     fullCallTable(ct)
+
+    recognizedSymbols <- shiny.huge.geneTable$symbol[shiny.huge.symbolToIndexMap[[ct$Symbol]]]
+
+    unrecognizedCalls <- ct[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
+    unrecognizedSymbols <- unique(unrecognizedCalls$Symbol)
+
+    output$unrecognizedSymbols <- renderText(paste0(unrecognizedSymbols, collapse = "\n"))
 
     progress$close()
   })

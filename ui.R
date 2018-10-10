@@ -58,6 +58,7 @@ shinyUI(
           fluidRow(
             box(
               title = "Upload",
+              width = 12,
               p("You can upload your variant call table here."),
               hr(),
               fileInput("callFile", "Choose CSV File",
@@ -74,6 +75,12 @@ shinyUI(
               solidHeader = TRUE,
               p("Select which columns to display here. Beware to not disable columns that you want to use otherwise (e.g. histograms)."),
               checkboxGroupInput("selectedColumns", label = "Show columns: ", inline = TRUE)
+            ),
+            box(
+              width = 6,
+              style = "overflow-y: scroll; max-height: 400px",
+              title = "Unrecognized symbols",
+              verbatimTextOutput("unrecognizedSymbols")
             )
           )
         ),
