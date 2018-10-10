@@ -37,7 +37,7 @@ shiny.huge.handleErrorNotification <- function (value, filterName, notificationI
 
 }
 
-shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection, input, output) {
+shiny.huge.geneExpressionModal <- function (callTableReactiveVal, row_selection, input, output) {
 
   return({
 
@@ -79,6 +79,25 @@ shiny.huge.geneModalExpression <- function (callTableReactiveVal, row_selection,
 
 }
 
+shiny.huge.resetFilters <- function (session, callTable) {
+
+  numberOfSamples <- length(unique(callTable$Sample))
+  consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
+
+  updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
+  updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
+  updateSliderInput(session, "minReadDepth", value = 0, max = max(callTable$`Read depth`))
+  updateSliderInput(session, "minVariantDepth", value = 0, max = max(callTable$`Variant depth`, na.rm = TRUE))
+  updateSliderInput(session, "scaledTPM", value = c(0,1))
+  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
+  updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
+  updateNumericInput(session, "maxAFPopmax", value = 100)
+  updateNumericInput(session, "minRawTPM", value = 0)
+  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
+  updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
+
+}
+
 shinyServer(function(input, output, session) {
 
   fullCallTable <- reactiveVal()
@@ -103,20 +122,7 @@ shinyServer(function(input, output, session) {
 
     req(ct)
 
-    numberOfSamples <- length(unique(ct$Sample))
-    consequences <- unique(unlist(strsplit(ct$Consequence, ",")))
-
-    updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
-    updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
-    updateSliderInput(session, "minReadDepth", value = 0, max = max(ct$`Read depth`))
-    updateSliderInput(session, "minVariantDepth", value = 0, max = max(ct$`Variant depth`, na.rm = TRUE))
-    updateSliderInput(session, "scaledTPM", value = c(0,1))
-    updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
-    updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
-    updateNumericInput(session, "maxAFPopmax", value = 100)
-    updateNumericInput(session, "minRawTPM", value = 0)
-    updateSelectizeInput(session, "expressions", selected = NULL)
-    updateSelectInput(session, "consequences", selected = NULL, choices = consequences)
+    shiny.huge.resetFilters(session, ct)
 
     fullCallTable(ct)
 
@@ -261,7 +267,7 @@ shinyServer(function(input, output, session) {
   ### DETAIL MODAL
 
   observeEvent(input$callTable_rows_selected,
-               shiny.huge.geneModalExpression(
+               shiny.huge.geneExpressionModal(
                  filteredCallTable,
                  input$callTable_rows_selected,
                  input,
@@ -269,7 +275,7 @@ shinyServer(function(input, output, session) {
   )
 
   observeEvent(input$geneTable_rows_selected,
-               shiny.huge.geneModalExpression(
+               shiny.huge.geneExpressionModal(
                  geneTable,
                  input$geneTable_rows_selected,
                  input,
@@ -281,6 +287,14 @@ shinyServer(function(input, output, session) {
   })
 
   ### FILTERING
+
+  observeEvent(input$filterReset, {
+
+    req(fullCallTable())
+
+    shiny.huge.resetFilters(session, fullCallTable())
+
+  })
 
   observe({
 
