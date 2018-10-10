@@ -37,19 +37,17 @@ shiny.huge.handleErrorNotification <- function (value, filterName, notificationI
 
 }
 
-shiny.huge.geneExpressionModal <- function (callTableReactiveVal, row_selection, input, output) {
+shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, output) {
 
   return({
 
     req(callTableReactiveVal())
 
-    selectedRow <- callTableReactiveVal()[row_selection]
-
-    matchingGene <- shiny.huge.geneTable[shiny.huge.symbolToIndexMap[[selectedRow$Symbol]]]
+    matchingGene <- shiny.huge.geneTable[shiny.huge.symbolToIndexMap[[selectedSymbol]]]
 
     showModal(modalDialog(
       shiny.huge.detailDivElement("Location:", matchingGene$location),
-      shiny.huge.detailDivElement("Gene (found in table):", selectedRow$Symbol),
+      shiny.huge.detailDivElement("Gene (found in table):", selectedSymbol),
       shiny.huge.detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
       shiny.huge.detailDivElement("Gene full name:", matchingGene$name),
       shiny.huge.detailDivElement("Gene family:", matchingGene$gene_family),
@@ -60,7 +58,8 @@ shiny.huge.geneExpressionModal <- function (callTableReactiveVal, row_selection,
       tags$b("Expression:"),
       tabsetPanel(
         tabPanel("GTEx tissues (TPM)", plotOutput("modalGTExExpression", height = "640px")),
-        tabPanel("GTex tissues (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px"))
+        tabPanel("GTex tissues (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
+        tabPanel("Mutation types", tableOutput("modalMutationTypes"))
       ),
       title = "Details",
       footer = actionButton("modalOkBtn", label = "OK", icon = icon("ok")),
@@ -73,8 +72,13 @@ shiny.huge.geneExpressionModal <- function (callTableReactiveVal, row_selection,
     rawValues <- expression[,list(tissue = tissue, value = tpm)]
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
 
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawValues, input$expressions, paste(selectedRow$Symbol, "GTEx data (raw TPM)", sep = ": "))
-    output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledValues, input$expressions, paste(selectedRow$Symbol, "GTEx data (scaled TPM)", sep = ": "))
+    callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
+    uniqueMutations <- callsInGene[, .N, by = HGVSc]
+
+    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
+    output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    output$modalMutationTypes <- renderTable(uniqueMutations)
+
   })
 
 }
@@ -268,16 +272,16 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$callTable_rows_selected,
                shiny.huge.geneExpressionModal(
+                 filteredCallTable()[input$callTable_rows_selected]$Symbol,
                  filteredCallTable,
-                 input$callTable_rows_selected,
                  input,
                  output)
   )
 
   observeEvent(input$geneTable_rows_selected,
                shiny.huge.geneExpressionModal(
-                 geneTable,
-                 input$geneTable_rows_selected,
+                 geneTable()[input$geneTable_rows_selected, Symbol],
+                 filteredCallTable,
                  input,
                  output)
   )
