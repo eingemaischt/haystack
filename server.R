@@ -78,8 +78,14 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
 
     callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
-    uniqueMutations <- callsInGene[,
-      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Samples" = .N),
+    # Patients may be sampled twice, so we need to 'pre-deduplicate' before the
+    # actual deduplication
+    callsPerPatientInGene <- callsInGene[,
+      list("Read depth" = mean(`Read depth`), "Variant depth" = mean(`Variant depth`), "Samples" = .N),
+      by = list(HGVSc, AlternativePatNr, Chr, Position, Consequence, `AF Popmax`)
+    ]
+    uniqueMutations <- callsPerPatientInGene[,
+      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Patients" = .N, "Samples" = sum(Samples)),
       by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
     ]
 
@@ -93,11 +99,11 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
 
 shiny.huge.resetFilters <- function (session, callTable) {
 
-  numberOfSamples <- length(unique(callTable$Sample))
+  numberOfPatients <- length(unique(callTable$AlternativePatNr))
   consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
 
   updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
-  updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
+  updateSliderInput(session, "patientNumber", value = c(0, numberOfPatients), max = numberOfPatients)
   updateSliderInput(session, "minReadDepth", value = 0, max = max(callTable$`Read depth`))
   updateSliderInput(session, "minVariantDepth", value = 0, max = max(callTable$`Variant depth`, na.rm = TRUE))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
@@ -312,7 +318,7 @@ shinyServer(function(input, output, session) {
 
     req(fullCallTable())
     req(input$selectedColumns)
-    req(input$sampleNumber)
+    req(input$patientNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
@@ -321,11 +327,11 @@ shinyServer(function(input, output, session) {
 
     ct <- fullCallTable()
 
-    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
-    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
+    patientSymbolStrings <- paste0(ct$AlternativePatNr, ct$Symbol)
+    patientSymbolDuplicates <- duplicated(patientSymbolStrings) | duplicated(patientSymbolStrings, fromLast = TRUE)
 
     ct <- ct[
-      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
+      (!input$onlyCompoundHeterozygosity | patientSymbolDuplicates) &
         (
           ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
           ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
@@ -339,10 +345,10 @@ shinyServer(function(input, output, session) {
       input$selectedColumns, with = FALSE
       ]
 
-    # count mutations per gene per sample by multiple aggregations
-    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
-    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
-    gt <- gt[order(samples, decreasing = TRUE)]
+    # count mutations per gene per patient by multiple aggregations
+    gt <- ct[, list(patients = .N), by = .(Symbol, AlternativePatNr)]
+    gt <- gt[, list(patients = .N, compound_het_patients = sum(patients > 1)), by = .(Symbol)]
+    gt <- gt[order(patients, decreasing = TRUE)]
 
     matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
 
@@ -360,9 +366,9 @@ shinyServer(function(input, output, session) {
     ensemblIDs <- shiny.huge.geneTable$ensembl_gene_id[matchingGeneIndices]
 
     gt <- gt[
-      input$sampleNumber[1] <= samples &
-        input$sampleNumber[2] >= samples &
-        (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
+      input$patientNumber[1] <= patients &
+      input$patientNumber[2] >= patients &
+      (is.null(input$expressions) | ensemblIDs %in% expressionFilteredGenes$gene_id)
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
