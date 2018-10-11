@@ -34,22 +34,19 @@ shiny.huge.symbolToIndexMap <- (function () {
 
   symbolMap <- hashmap(shiny.huge.geneTable$symbol, seq_along(shiny.huge.geneTable$symbol))
 
-  uppercaseSymbols <- toupper(shiny.huge.geneTable$symbol)
-  uppercaseIndices <- seq_along(uppercaseSymbols)
-
   splitAliases <- strsplit(shiny.huge.geneTable$alias_symbol, "|", fixed = TRUE)
   splitPrevSymbols <- strsplit(shiny.huge.geneTable$prev_symbol, "|", fixed = TRUE)
 
   aliasIndices <- lapply(seq_along(splitAliases), function (i) rep(i, length(splitAliases[[i]])))
   prevIndices <- lapply(seq_along(splitPrevSymbols), function (i) rep(i, length(splitPrevSymbols[[i]])))
 
-  splitAliases <- toupper(unlist(splitAliases))
-  splitPrevSymbols <- toupper(unlist(splitPrevSymbols))
+  splitAliases <- unlist(splitAliases)
+  splitPrevSymbols <- unlist(splitPrevSymbols)
   aliasIndices <- unlist(aliasIndices)
   prevIndices <- unlist(prevIndices)
 
-  secondaryNames <- c(uppercaseSymbols, splitAliases, splitPrevSymbols)
-  secondaryIndices <- c(uppercaseIndices, aliasIndices, prevIndices)
+  secondaryNames <- c(splitAliases, splitPrevSymbols)
+  secondaryIndices <- c(aliasIndices, prevIndices)
 
   validIndices <- !(duplicated(secondaryNames) | duplicated(secondaryNames, fromLast = TRUE)) & !secondaryNames %in% shiny.huge.geneTable$symbol
 
@@ -57,6 +54,11 @@ shiny.huge.symbolToIndexMap <- (function () {
   secondaryValues <- secondaryIndices[validIndices]
 
   symbolMap[[secondaryKeys]] <- secondaryValues
+
+  containingLowercaseKeys <- symbolMap$keys()
+  containingLowercaseKeys <- containingLowercaseKeys[toupper(containingLowercaseKeys) != containingLowercaseKeys]
+
+  symbolMap[[toupper(containingLowercaseKeys)]] <- symbolMap[[containingLowercaseKeys]]
 
   return(symbolMap)
 })()
