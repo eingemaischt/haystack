@@ -80,6 +80,7 @@ shinyUI(
               width = 6,
               style = "overflow-y: scroll; max-height: 400px",
               title = "Unrecognized symbols",
+              footer = "These symbols from the variant call table are either not valid HGNC symbols or are not found in the GTEx dataset with a median tpm > 0.",
               verbatimTextOutput("unrecognizedSymbols")
             )
           )
