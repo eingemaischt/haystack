@@ -11,7 +11,20 @@ shiny.huge.detailDivElement <- function (label, value) {
 
 shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
-  if (nrow(expressions) == 0) return(renderText("No values found."))
+  ### WORKAROUND
+  ### when no expressions are found, just render some dummy plot so no errors are thrown
+  ### see https://stackoverflow.com/questions/19918985/r-plot-only-text
+  if (nrow(expressions) == 0) {
+
+    errorMessage <- "No gtex information available"
+
+    return(renderPlot(
+      ggplot() + annotate("text", x = 4, y = 25, size = 8, label = errorMessage)+
+        theme_bw() +
+        theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank())
+    ))
+  }
+  ### END WORKAROUND
 
   return(renderPlot(
     ggplot(expressions, aes(x = reorder(tissue, value, FUN = max), y = value, fill = tissue %in% expressionFilter, colour = tissue %in% expressionFilter)) +
