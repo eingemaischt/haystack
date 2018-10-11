@@ -257,19 +257,29 @@ shinyServer(function(input, output, session) {
     ourIndices <- shiny.huge.symbolToIndexMap[[ourSymbols]]
     theirIndices <- shiny.huge.symbolToIndexMap[[theirSymbols]]
 
-    onlyOurIndices <- setdiff(ourIndices, theirIndices)
-    intersectingIndices <- intersect(ourIndices, theirIndices)
-    onlyTheirIndices <- setdiff(theirIndices, ourIndices)
+    ourIndexTable <- data.table(symbol = ourSymbols, index = ourIndices)
+    theirIndexTable <- data.table(symbol = theirSymbols, index = theirIndices)
 
-    output$ourSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[ourIndices], collapse = "\n"))
-    output$intersectingSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[intersectingIndices], collapse = "\n"))
-    output$theirSymbols <- renderText(paste0(shiny.huge.geneTable$symbol[theirIndices], collapse = "\n"))
+    ourNonNAIndices <- ourIndexTable[!is.na(index), index]
+    theirNonNAIndices <- theirIndexTable[!is.na(index), index]
+
+    onlyOurIndices <- setdiff(ourNonNAIndices, theirNonNAIndices)
+    intersectingIndices <- intersect(ourNonNAIndices, theirNonNAIndices)
+    onlyTheirIndices <- setdiff(theirNonNAIndices, ourNonNAIndices)
+
+    onlyOurSymbols <- ourIndexTable[(index %in% onlyOurIndices | is.na(index)) & !symbol %in% theirIndexTable$symbol , symbol]
+    intersectingSymbols <- ourIndexTable[index %in% intersectingIndices | symbol %in% theirIndexTable$symbol, symbol]
+    onlyTheirSymbols <- theirIndexTable[(index %in% onlyTheirIndices | is.na(index)) & !symbol %in% ourIndexTable$symbol, symbol]
+
+    output$ourSymbols <- renderText(paste0(onlyOurSymbols, collapse = "\n"))
+    output$intersectingSymbols <- renderText(paste0(intersectingSymbols, collapse = "\n"))
+    output$theirSymbols <- renderText(paste0(onlyTheirSymbols, collapse = "\n"))
 
     output$geneComparisonVenn <- renderPlot({
 
       venn <- venn.diagram(list(
-        our_symbols = ourIndices,
-        their_symbols = theirIndices
+        our_symbols = c(shiny.huge.geneTable$symbol[ourNonNAIndices], ourIndexTable[is.na(index), symbol]),
+        their_symbols = c(shiny.huge.geneTable$symbol[theirNonNAIndices], theirIndexTable[is.na(index), symbol])
       ), filename = NULL, na = "remove")
 
       grid.draw(venn)
