@@ -65,7 +65,7 @@ shiny.huge.isValidTable <- function (dt) {
   return(
     all(expectedColumns %in% colnames(dt)) &&
     all(actualCharacterColumnTypes == "character") &&
-    all(actualNumericColumnTypes %in% c("numeric", "integer"))
+    all(actualNumericColumnTypes %in% c("numeric", "integer", "logical"))
   )
 
 }
@@ -130,14 +130,9 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
 
     callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
-    # Patients may be sampled twice, so we need to 'pre-deduplicate' before the
-    # actual deduplication
-    callsPerPatientInGene <- callsInGene[,
-      list("Read depth" = mean(`Read depth`), "Variant depth" = mean(`Variant depth`), "Samples" = .N),
-      by = list(HGVSc, AlternativePatNr, Chr, Position, Consequence, `AF Popmax`)
-    ]
-    uniqueMutations <- callsPerPatientInGene[,
-      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Patients" = .N, "Samples" = sum(Samples)),
+
+    uniqueMutations <- callsInGene[,
+      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Samples" = .N),
       by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
     ]
 
@@ -161,11 +156,11 @@ shiny.huge.showErrorModal <- function (errorMessage, session) {
 
 shiny.huge.resetFilters <- function (session, callTable) {
 
-  numberOfPatients <- length(unique(callTable$AlternativePatNr))
+  numberOfSamples <- length(unique(callTable$Sample))
   consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
 
   updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
-  updateSliderInput(session, "patientNumber", value = c(0, numberOfPatients), max = numberOfPatients)
+  updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0, max = max(callTable$`Read depth`))
   updateSliderInput(session, "minVariantDepth", value = 0, max = max(callTable$`Variant depth`, na.rm = TRUE))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
@@ -402,7 +397,7 @@ shinyServer(function(input, output, session) {
 
     req(fullCallTable())
     req(input$selectedColumns)
-    req(input$patientNumber)
+    req(input$sampleNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
@@ -411,11 +406,11 @@ shinyServer(function(input, output, session) {
 
     ct <- fullCallTable()
 
-    patientSymbolStrings <- paste0(ct$AlternativePatNr, ct$Symbol)
-    patientSymbolDuplicates <- duplicated(patientSymbolStrings) | duplicated(patientSymbolStrings, fromLast = TRUE)
+    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
+    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
 
     ct <- ct[
-      (!input$onlyCompoundHeterozygosity | patientSymbolDuplicates) &
+      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
         (
           ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
           ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
@@ -429,10 +424,10 @@ shinyServer(function(input, output, session) {
       input$selectedColumns, with = FALSE
       ]
 
-    # count mutations per gene per patient by multiple aggregations
-    gt <- ct[, list(patients = .N), by = .(Symbol, AlternativePatNr)]
-    gt <- gt[, list(patients = .N, compound_het_patients = sum(patients > 1)), by = .(Symbol)]
-    gt <- gt[order(patients, decreasing = TRUE)]
+    # count mutations per gene per sample by multiple aggregations
+    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
+    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
+    gt <- gt[order(samples, decreasing = TRUE)]
 
     matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
     matchingGeneNames <- shiny.huge.geneTable$symbol[matchingGeneIndices]
@@ -449,8 +444,8 @@ shinyServer(function(input, output, session) {
     ]
 
     gt <- gt[
-      input$patientNumber[1] <= patients &
-      input$patientNumber[2] >= patients &
+      input$sampleNumber[1] <= samples &
+      input$sampleNumber[2] >= samples &
       (is.null(input$expressions) | matchingGeneNames %in% expressionFilteredGenes$symbol)
       ]
     ct <- ct[Symbol %in% gt$Symbol]
