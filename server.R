@@ -348,7 +348,7 @@ shinyServer(function(input, output, session) {
     progress$set(message = paste("Opening reactome pathway overrepresenation link using", length(hgncGenes), "genes"), value = .5)
 
     apiUrl <- "https://reactome.org/AnalysisService/identifiers/projection"
-    reactomeResponse <- POST(apiUrl, body = hgncGenes, add_headers("content-type" = "text/plain"))
+    reactomeResponse <- POST(apiUrl, body = hgncGenes, add_headers("content-type" = "text/plain"), timeout(60))
 
     analysisToken <- content(reactomeResponse)$summary$token
 
