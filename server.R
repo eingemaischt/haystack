@@ -53,6 +53,39 @@ shiny.huge.handleErrorNotification <- function (value, filterName, notificationI
 
 }
 
+shiny.huge.isValidTable <- function (dt) {
+
+  characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
+  numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
+  expectedColumns <- c(characterColumns, numericColumns)
+
+  actualCharacterColumnTypes <- sapply(dt[,..characterColumns], class)
+  actualNumericColumnTypes <- sapply(dt[,..numericColumns], class)
+
+  return(
+    all(expectedColumns %in% colnames(dt)) &&
+    all(actualCharacterColumnTypes == "character") &&
+    all(actualNumericColumnTypes %in% c("numeric", "integer"))
+  )
+
+}
+
+shiny.huge.readCallTable <- function (fileName) {
+
+  ct <- fread(fileName)
+
+  if (is.numeric(ct$Chr)) {
+    ct$Chr <- as.character(ct$Chr)
+  }
+
+  if (shiny.huge.isValidTable(ct)) {
+    return(ct)
+  } else {
+    return(NULL)
+  }
+
+}
+
 shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, output) {
 
   return({
@@ -116,6 +149,16 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
 
 }
 
+shiny.huge.showErrorModal <- function (errorMessage, session) {
+
+  showModal(modalDialog(
+    tags$div(errorMessage),
+    title = "ERROR",
+    easyClose = TRUE
+  ))
+
+}
+
 shiny.huge.resetFilters <- function (session, callTable) {
 
   numberOfPatients <- length(unique(callTable$AlternativePatNr))
@@ -155,7 +198,12 @@ shinyServer(function(input, output, session) {
     progress <- shiny::Progress$new()
     progress$set(message = "Uploading table", value = .5)
 
-    ct <- fread(input$callFile$datapath)
+    ct <- shiny.huge.readCallTable(input$callFile$datapath)
+
+    if(is.null(ct)) {
+      shiny.huge.showErrorModal("Could not correctly read table. Make sure there are no trailing rows, all relevant columns are present and dots are used as decimal seperators.")
+      progress$close()
+    }
 
     req(ct)
 
