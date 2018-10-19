@@ -206,12 +206,25 @@ shinyServer(function(input, output, session) {
 
     fullCallTable(ct)
 
-    recognizedSymbols <- shiny.huge.geneTable$symbol[shiny.huge.symbolToIndexMap[[ct$Symbol]]]
+    recognizedSymbolIndices <- shiny.huge.symbolToIndexMap[[ct$Symbol]]
+    symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
+    recognizedSymbols <- unique(shiny.huge.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 
-    unrecognizedCalls <- ct[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
-    unrecognizedSymbols <- unique(unrecognizedCalls$Symbol)
+    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
+    unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
     output$unrecognizedSymbols <- renderText(paste0(unrecognizedSymbols, collapse = "\n"))
+    output$unexpressedSymbols <- renderText(paste0(unexpressedSymbols, collapse = "\n"))
+
+    symbolsInTotal <- length(unique(ct$Symbol))
+    unrecognizedInTotal <- length(unrecognizedSymbols)
+    unexpressedInTotal <- length(unexpressedSymbols)
+
+    fractionUnrecognized <- round(unrecognizedInTotal / symbolsInTotal, digits = 2)
+    fractionUnexpressed <- round(unexpressedInTotal / symbolsInTotal, digits = 2)
+
+    output$totalUnrecognizedSymbols <- renderText(paste0(unrecognizedInTotal, " (", fractionUnrecognized, "%)"))
+    output$totalUnexpressedSymbols <- renderText(paste0(unexpressedInTotal, " (", fractionUnexpressed, "%)"))
 
     progress$close()
   })

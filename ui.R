@@ -77,11 +77,30 @@ shinyUI(
               checkboxGroupInput("selectedColumns", label = "Show columns: ", inline = TRUE)
             ),
             box(
-              width = 6,
-              style = "overflow-y: scroll; max-height: 400px",
+              width = 3,
+              title = "Symbols with no expression",
+              footer = "These symbols have a valid HGNC symbol but show no expression data in any tissue (or all tissues show tpm values of 0).",
+              tags$div(
+                style = "overflow-y: scroll; max-height: 400px",
+                verbatimTextOutput("unexpressedSymbols")
+              ),
+              tags$div(
+                "Total: ",
+                textOutput("totalUnexpressedSymbols", inline = TRUE)
+              )
+            ),
+            box(
+              width = 3,
               title = "Unrecognized symbols",
-              footer = "These symbols from the variant call table are either not valid HGNC symbols or are not found in the GTEx dataset with a median tpm > 0.",
-              verbatimTextOutput("unrecognizedSymbols")
+              footer = "These symbols are no valid (up-to-date) HGNC symbols. Also, no valid previous or alias name could be found.",
+              tags$div(
+                style = "overflow-y: scroll; max-height: 400px",
+                verbatimTextOutput("unrecognizedSymbols")
+              ),
+              tags$div(
+                "Total: ",
+                textOutput("totalUnrecognizedSymbols", inline = TRUE)
+              )
             )
           )
         ),
