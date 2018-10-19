@@ -59,7 +59,7 @@ shinyUI(
           fluidRow(
             box(
               title = "Upload",
-              width = 12,
+              width = 8,
               p("You can upload your variant call table here."),
               hr(),
               fileInput("callFile", "Choose CSV File",
@@ -68,6 +68,13 @@ shinyUI(
                           "text/comma-separated-values,text/plain",
                           ".csv")
               )
+            ),
+            box(
+              title = "Download",
+              width = 4,
+              p("You can download the filtered variant call table here. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."),
+              hr(),
+              downloadButton("filteredCallTableDownload")
             )
           ),
           fluidRow(
@@ -122,7 +129,7 @@ shinyUI(
               solidHeader = TRUE,
               title = "Download",
               downloadButton("geneDownload", label = "Download table"),
-              footer = "This download contains the filtered genes only."
+              footer = "This download contains the filtered genes only. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."
             )
           )
         ),
@@ -135,6 +142,17 @@ shinyUI(
               solidHeader = TRUE,
               footer = "This window shows the annotation data used for this app, it is extracted from the HGNC.",
               DT::dataTableOutput("annotationTable")
+            )
+          ),
+          fluidRow(
+            box(
+              width = 4,
+              solidHeader = TRUE,
+              footer = "Please note that downloads always contain the whole tables. Filters and sorting orders do not apply.",
+              title = "Download",
+              downloadButton("annotationDownload", label = "Download gene annotation table (HGNC/NCBI)"),
+              hr(),
+              downloadButton("gtexDownload", label = "Download expression table (GTEx)")
             )
           )
         ),

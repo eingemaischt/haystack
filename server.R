@@ -155,6 +155,30 @@ shiny.huge.showErrorModal <- function (errorMessage, session) {
 
 }
 
+shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix) {
+
+  return(downloadHandler(
+    filename = function() {
+      paste0(filePrefix, Sys.time(), ".csv")
+    },
+    content = function (con) {
+
+      if(is.null(tableReactiveValue())) {
+
+        writtenData <- data.table("NO DATA AVAILABLE")
+
+      } else {
+
+        writtenData <- tableReactiveValue()
+
+      }
+
+      fwrite(writtenData, con)
+    }
+  ))
+
+}
+
 shiny.huge.resetFilters <- function (session, callTable) {
 
   numberOfSamples <- length(unique(callTable$Sample))
@@ -260,6 +284,8 @@ shinyServer(function(input, output, session) {
                         )))
   })
 
+  output$filteredCallTableDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls-")
+
   ### GENE TABLE TAB
 
   output$geneTable <- DT::renderDataTable({
@@ -272,10 +298,7 @@ shinyServer(function(input, output, session) {
     )
   })
 
-  output$geneDownload <- downloadHandler(
-    filename = "genes.csv",
-    content = function (con) write.csv(geneTable(), file = con, row.names = FALSE)
-  )
+  output$geneDownload <- shiny.huge.handleTableDownload(geneTable, "genes-")
 
   ### ANNOTATION TABLE TAB
 
@@ -293,6 +316,9 @@ shinyServer(function(input, output, session) {
                              "}"
                            )))
                          )))
+
+  output$annotationDownload <- shiny.huge.handleTableDownload(function () shiny.huge.geneTable, "annotation-")
+  output$gtexDownload <- shiny.huge.handleTableDownload(function () shiny.huge.gtexExpression, "gtex-expression-")
 
   ### GENE COMPARISON TAB
 
