@@ -164,6 +164,7 @@ shinyUI(
             box(
               width = 12,
               title = "Venn Diagram",
+              footer = "You can save this diagram using right click -> 'Save image as'.",
               plotOutput("geneComparisonVenn")
             )
           ),
