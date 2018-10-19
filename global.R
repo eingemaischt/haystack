@@ -30,7 +30,8 @@ cranPackages <- c(
   "htmlwidgets",
   "DT",
   "VennDiagram",
-  "xml2"
+  "xml2",
+  "rclipboard"
 )
 
 biocPackages <- c(

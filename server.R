@@ -199,6 +199,12 @@ shiny.huge.resetFilters <- function (session, callTable) {
 
 }
 
+shiny.huge.copyToClipboardButton <- function (text, id) {
+  return(renderUI({
+    rclipButton(id, "Copy to clipboard", text, icon("clipboard"))
+  }))
+}
+
 shinyServer(function(input, output, session) {
 
   fullCallTable <- reactiveVal()
@@ -239,8 +245,8 @@ shinyServer(function(input, output, session) {
     unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
     unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
-    output$unrecognizedSymbols <- renderText(paste0(unrecognizedSymbols, collapse = "\n"))
-    output$unexpressedSymbols <- renderText(paste0(unexpressedSymbols, collapse = "\n"))
+    unrecognizedSymbolsText <- paste0(unrecognizedSymbols, collapse = "\n")
+    unexpressedSymbolsText <- paste0(unexpressedSymbols, collapse = "\n")
 
     symbolsInTotal <- length(unique(ct$Symbol))
     unrecognizedInTotal <- length(unrecognizedSymbols)
@@ -249,8 +255,14 @@ shinyServer(function(input, output, session) {
     fractionUnrecognized <- round(unrecognizedInTotal / symbolsInTotal, digits = 2)
     fractionUnexpressed <- round(unexpressedInTotal / symbolsInTotal, digits = 2)
 
+    output$unrecognizedSymbols <- renderText(unrecognizedSymbolsText)
+    output$unexpressedSymbols <- renderText(unexpressedSymbolsText)
+
     output$totalUnrecognizedSymbols <- renderText(paste0(unrecognizedInTotal, " (", fractionUnrecognized, "%)"))
     output$totalUnexpressedSymbols <- renderText(paste0(unexpressedInTotal, " (", fractionUnexpressed, "%)"))
+
+    output$unrecognizedToClipboard <- shiny.huge.copyToClipboardButton(unrecognizedSymbolsText, "unrecognizedbtn")
+    output$unexpressedToClipboard <- shiny.huge.copyToClipboardButton(unexpressedSymbolsText, "unexpressedbtn")
 
     progress$close()
   })
@@ -355,9 +367,17 @@ shinyServer(function(input, output, session) {
     intersectingSymbols <- ourIndexTable[index %in% intersectingIndices | symbol %in% theirIndexTable$symbol, symbol]
     onlyTheirSymbols <- theirIndexTable[(index %in% onlyTheirIndices | is.na(index)) & !symbol %in% ourIndexTable$symbol, symbol]
 
-    output$ourSymbols <- renderText(paste0(onlyOurSymbols, collapse = "\n"))
-    output$intersectingSymbols <- renderText(paste0(intersectingSymbols, collapse = "\n"))
-    output$theirSymbols <- renderText(paste0(onlyTheirSymbols, collapse = "\n"))
+    onlyOurSymbolsText <- paste0(onlyOurSymbols, collapse = "\n")
+    intersectingSymbolsText <- paste0(intersectingSymbols, collapse = "\n")
+    onlyTheirSymbolsText <- paste0(onlyTheirSymbols, collapse = "\n")
+
+    output$ourSymbols <- renderText(onlyOurSymbolsText)
+    output$intersectingSymbols <- renderText(intersectingSymbolsText)
+    output$theirSymbols <- renderText(onlyTheirSymbolsText)
+
+    output$ourSymbolsToClipboard <- shiny.huge.copyToClipboardButton(onlyOurSymbolsText, "ourbtn")
+    output$intersectingSymbolsToClipboard <- shiny.huge.copyToClipboardButton(intersectingSymbolsText, "intersectingbtn")
+    output$theirSymbolsToClipboard <- shiny.huge.copyToClipboardButton(onlyTheirSymbolsText, "theirbtn")
 
     output$geneComparisonVenn <- renderPlot({
 
@@ -383,7 +403,7 @@ shinyServer(function(input, output, session) {
 
     hgncSymbolIndices <- shiny.huge.symbolToIndexMap[[geneTable()$Symbol]]
 
-    hgncGenes <- unique(shiny.huge.geneTable$symbol[hgncSymbolIndices])
+    hgncGenes <- unique(shiny.huge.geneTable$symbol[hgncSymbolIndices[!is.na(hgncSymbolIndices)]])
 
     progress <- shiny::Progress$new()
     progress$set(message = paste("Opening reactome pathway overrepresenation link using", length(hgncGenes), "genes"), value = .5)

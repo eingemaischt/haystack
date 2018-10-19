@@ -42,7 +42,8 @@ shinyUI(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
         tags$style(
           HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
-        )
+        ),
+        rclipboardSetup()
       ),
       tabItems(
         tabItem(tabName = "callTableTab",
@@ -95,7 +96,8 @@ shinyUI(
               tags$div(
                 "Total: ",
                 textOutput("totalUnexpressedSymbols", inline = TRUE)
-              )
+              ),
+              uiOutput("unexpressedToClipboard")
             ),
             box(
               width = 3,
@@ -108,7 +110,8 @@ shinyUI(
               tags$div(
                 "Total: ",
                 textOutput("totalUnrecognizedSymbols", inline = TRUE)
-              )
+              ),
+              uiOutput("unrecognizedToClipboard")
             )
           )
         ),
@@ -169,19 +172,22 @@ shinyUI(
               width = 4,
               style = "overflow-y: scroll; max-height: 400px",
               title = "Symbols only in our data",
-              verbatimTextOutput("ourSymbols")
+              verbatimTextOutput("ourSymbols"),
+              uiOutput("ourSymbolsToClipboard")
             ),
             box(
               width = 4,
               style = "overflow-y: scroll; max-height: 400px",
               title = "Intersecting symbols",
-              verbatimTextOutput("intersectingSymbols")
+              verbatimTextOutput("intersectingSymbols"),
+              uiOutput("intersectingSymbolsToClipboard")
             ),
             box(
               width = 4,
               style = "overflow-y: scroll; max-height: 400px",
               title = "Symbols only in their data",
-              verbatimTextOutput("theirSymbols")
+              verbatimTextOutput("theirSymbols"),
+              uiOutput("theirSymbolsToClipboard")
             )
           ),
           fluidRow(
