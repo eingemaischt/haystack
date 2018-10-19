@@ -421,19 +421,15 @@ shinyServer(function(input, output, session) {
 
     ct <- fullCallTable()
 
-    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
-    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
-
     variantFrequency <- ct$`Variant depth` / ct$`Read depth`
 
     ct <- ct[
-      (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
-        (
-          ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
-          ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
-          ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
-          ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
-        ) &
+      (
+        ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
+        ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
+        ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
+        ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
+      ) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
       ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
@@ -441,6 +437,14 @@ shinyServer(function(input, output, session) {
       (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
       input$selectedColumns, with = FALSE
     ]
+
+    # Filter for compound heterozygosity only after other variant filters have been applied
+    # Otherwise, there will be variants that are not compound based on the filters
+    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
+    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
+
+    ct <- ct[!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates]
+
 
     # count mutations per gene per sample by multiple aggregations
     gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
