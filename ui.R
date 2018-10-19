@@ -16,9 +16,9 @@ shinyUI(
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
-          "homozygous ref" = "hom_ref",
-          "heterozygous" = "het",
-          "homozygous alt" = "hom_alt"
+          "0/0" = "hom_ref",
+          "0/1, 1/0" = "het",
+          "1/1" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
