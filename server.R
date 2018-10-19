@@ -162,8 +162,9 @@ shiny.huge.resetFilters <- function (session, callTable) {
 
   updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
-  updateSliderInput(session, "minReadDepth", value = 0, max = max(callTable$`Read depth`))
-  updateSliderInput(session, "minVariantDepth", value = 0, max = max(callTable$`Variant depth`, na.rm = TRUE))
+  updateSliderInput(session, "minReadDepth", value = 0)
+  updateSliderInput(session, "minVariantDepth", value = 0)
+  updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
@@ -423,6 +424,8 @@ shinyServer(function(input, output, session) {
     sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
     sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
 
+    variantFrequency <- ct$`Variant depth` / ct$`Read depth`
+
     ct <- ct[
       (!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates) &
         (
@@ -431,12 +434,13 @@ shinyServer(function(input, output, session) {
           ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
           ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
         ) &
-        `Read depth` >= input$minReadDepth &
-        (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
-        (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
-        (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
+      `Read depth` >= input$minReadDepth &
+      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
+      ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
+      (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
+      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
       input$selectedColumns, with = FALSE
-      ]
+    ]
 
     # count mutations per gene per sample by multiple aggregations
     gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]

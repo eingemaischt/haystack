@@ -10,8 +10,9 @@ shinyUI(
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
         sliderInput("sampleNumber",  label = "Number of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
-        sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 100, value = 0),
-        sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 100, value = 0),
+        sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 200, value = 0),
+        sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 200, value = 0),
+        sliderInput("readVariantFrequency", label = "Frequency (variant depth / read depth)", min = 0, max = 1, step = 0.05, value = c(0,1)),
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
