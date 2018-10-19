@@ -184,6 +184,8 @@ shiny.huge.resetFilters <- function (session, callTable) {
   numberOfSamples <- length(unique(callTable$Sample))
   consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
 
+  studies <- unique(callTable$Studie)
+
   updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0)
@@ -196,6 +198,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateNumericInput(session, "minRawTPM", value = 0)
   updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
+  updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
 
 }
 
@@ -480,7 +483,8 @@ shinyServer(function(input, output, session) {
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
       ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
       (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
-      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)),
+      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
+      (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)),
       input$selectedColumns, with = FALSE
     ]
 
