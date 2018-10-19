@@ -59,11 +59,12 @@ shiny.huge.isValidTable <- function (dt) {
   numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
   expectedColumns <- c(characterColumns, numericColumns)
 
+  if (any(!expectedColumns %in% colnames(dt))) return(FALSE)
+
   actualCharacterColumnTypes <- sapply(dt[,..characterColumns], class)
   actualNumericColumnTypes <- sapply(dt[,..numericColumns], class)
 
   return(
-    all(expectedColumns %in% colnames(dt)) &&
     all(actualCharacterColumnTypes == "character") &&
     all(actualNumericColumnTypes %in% c("numeric", "integer", "logical"))
   )
