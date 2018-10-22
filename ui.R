@@ -64,7 +64,7 @@ shinyUI(
           fluidRow(
             box(
               title = "Upload",
-              width = 8,
+              width = 6,
               p("You can upload your variant call table here. Make sure to upload only correctly formatted files (comma separated, periods as decimal seperators)."),
               hr(),
               fileInput("callFile", "Choose CSV File",
@@ -76,7 +76,8 @@ shinyUI(
             ),
             box(
               title = "Download",
-              width = 4,
+              width = 6,
+              style = "height: 100%",
               p("You can download the filtered variant call table here. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."),
               hr(),
               downloadButton("filteredCallTableDownload")
@@ -85,7 +86,6 @@ shinyUI(
           fluidRow(
             box(
               title = "Select displayed columns",
-              solidHeader = TRUE,
               p("Select which columns to display here. Beware to not disable columns that you want to use otherwise."),
               checkboxGroupInput("selectedColumns", label = "Show columns: ", inline = TRUE)
             ),
@@ -201,7 +201,7 @@ shinyUI(
           ),
           fluidRow(
             box(
-              width = 6,
+              width = 4,
               title = "Gene List Upload",
               footer = "You can upload a gene list here to compare to the genes found in the variant table. Every line must contain exactly one HGNC symbol.",
               fileInput("geneComparisonListUpload", label = "Upload genes for comparison")
