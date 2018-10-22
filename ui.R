@@ -23,7 +23,6 @@ shinyUI(
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
         selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
         sliderInput("scaledTPM", label = "Scaled Expression TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
-        numericInput("minRawTPM", label = "Minimum Expression TPM value", min = 0, max = max(shiny.huge.gtexExpression$tpm), value = 0),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
         actionButton("filterReset", label = "Reset filters"),

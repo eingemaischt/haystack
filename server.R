@@ -122,10 +122,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       easyClose = TRUE
     ))
 
-    expression <- shiny.huge.gtexExpression[
-      symbol %in% matchingGene$symbol &
-      tpm >= input$minRawTPM
-    ]
+    expression <- shiny.huge.gtexExpression[symbol %in% matchingGene$symbol]
 
     rawValues <- expression[,list(tissue = tissue, value = tpm)]
     scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
@@ -195,7 +192,6 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateNumericInput(session, "minRawTPM", value = 0)
   updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
@@ -273,10 +269,8 @@ shinyServer(function(input, output, session) {
   observe({
 
     maxPopMax <- input$maxAFPopmax
-    minRawTPM <- input$minRawTPM
 
     shiny.huge.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
-    shiny.huge.handleErrorNotification(minRawTPM, "minimum TPM", "minRawTPMErrorNotification")
 
   })
 
@@ -465,7 +459,6 @@ shinyServer(function(input, output, session) {
     req(input$minReadDepth)
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
-    req(input$minRawTPM)
     req(input$scaledTPM)
 
     ct <- fullCallTable()
@@ -510,7 +503,6 @@ shinyServer(function(input, output, session) {
     gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
     expressionFilteredGenes <- shiny.huge.gtexExpression[
-      tpm >= input$minRawTPM &
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
       tissue %in% input$expressions
     ]
