@@ -65,7 +65,7 @@ shinyUI(
             box(
               title = "Upload",
               width = 8,
-              p("You can upload your variant call table here."),
+              p("You can upload your variant call table here. Make sure to upload only correctly formatted files (comma separated, periods as decimal seperators)."),
               hr(),
               fileInput("callFile", "Choose CSV File",
                         accept = c(
@@ -86,7 +86,7 @@ shinyUI(
             box(
               title = "Select displayed columns",
               solidHeader = TRUE,
-              p("Select which columns to display here. Beware to not disable columns that you want to use otherwise (e.g. histograms)."),
+              p("Select which columns to display here. Beware to not disable columns that you want to use otherwise."),
               checkboxGroupInput("selectedColumns", label = "Show columns: ", inline = TRUE)
             ),
             box(
