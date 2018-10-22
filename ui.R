@@ -21,7 +21,7 @@ shinyUI(
           "1/1" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(shiny.huge.gtexExpression$tissue)),
+        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue))),
         sliderInput("scaledTPM", label = "Scaled Expression TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
@@ -155,7 +155,9 @@ shinyUI(
               title = "Download",
               downloadButton("annotationDownload", label = "Download gene annotation table (HGNC/NCBI)"),
               hr(),
-              downloadButton("gtexDownload", label = "Download expression table (GTEx)")
+              downloadButton("gtexDownload", label = "Download expression table (GTEx)"),
+              hr(),
+              downloadButton("hpaRnaDownload", label = "Download expression table (HPA RNA)")
             )
           )
         ),

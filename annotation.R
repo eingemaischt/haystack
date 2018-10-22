@@ -2,14 +2,11 @@ library(data.table)
 library(biomaRt)
 library(rentrez)
 library(hashmap)
-#library(hpar)
+library(hpar)
 
 shiny.huge.martMirror <- "www.ensembl.org"
 shiny.huge.allowedLevels <- c("High", "Medium", "Low")
 shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-
-# data("hpaNormalTissue")
-# data("rnaGeneTissue")
 
 # shiny.huge.normalExpressions <- as.data.table(hpaNormalTissue[hpaNormalTissue$Level %in% shiny.huge.allowedLevels & hpaNormalTissue$Reliability %in% shiny.huge.allowedReliabilities,])
 # order factors for later use
@@ -86,9 +83,47 @@ shiny.huge.gtexExpression <- (function () {
   scaledGtexData <- melt(scaledGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_scaled")
 
   combined <- merge(rawGtexData, scaledGtexData)
+
   combined$symbol <- shiny.huge.geneTable$symbol[shiny.huge.symbolToIndexMap[[combined$Description]]]
+  combined$tissue <- tolower(combined$tissue)
 
   return(combined[tpm > 0 & !is.na(symbol)])
+
+})()
+
+shiny.huge.hpaRnaExpression <- (function () {
+
+  if (exists("shiny.huge.hpaRnaExpression")) return(shiny.huge.hpaRnaExpression)
+
+  data("rnaGeneTissue")
+
+  normalizedExpression <- data.table(rnaGeneTissue, stringsAsFactors = FALSE)
+
+  hgncIndices <- shiny.huge.symbolToIndexMap[[normalizedExpression$Gene.name]]
+  isValidIndex <- !is.na(hgncIndices)
+
+  normalizedExpression <- normalizedExpression[isValidIndex]
+
+  normalizedExpression$tpm <- normalizedExpression$Value
+  normalizedExpression$Value <- NULL
+
+  normalizedExpression$tissue <- as.character(normalizedExpression$Sample)
+  normalizedExpression$Sample <- NULL
+
+  normalizedExpression$symbol <- shiny.huge.geneTable$symbol[hgncIndices[isValidIndex]]
+
+  geneMaxTpm <- normalizedExpression[,list(maxTpm = max(tpm)),by = Gene.name]
+
+  matchingIndices <- match(normalizedExpression$Gene.name, geneMaxTpm$Gene.name)
+
+  scaledTpm <- normalizedExpression$tpm / geneMaxTpm$maxTpm[matchingIndices]
+
+  normalizedExpression$tpm_scaled <- scaledTpm
+
+  normalizedExpression <- normalizedExpression[tpm > 0]
+
+  rm(rnaGeneTissue, envir = .GlobalEnv)
+  return(normalizedExpression)
 
 })()
 

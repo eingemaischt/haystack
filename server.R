@@ -16,7 +16,7 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
   ### see https://stackoverflow.com/questions/19918985/r-plot-only-text
   if (nrow(expressions) == 0) {
 
-    errorMessage <- "No gtex information available"
+    errorMessage <- "No information available"
 
     return(renderPlot(
       ggplot() + annotate("text", x = 4, y = 25, size = 8, label = errorMessage)+
@@ -107,8 +107,10 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
-        tabPanel("GTEx tissues (TPM)", plotOutput("modalGTExExpression", height = "640px")),
-        tabPanel("GTex tissues (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
+        tabPanel("GTEx (TPM)", plotOutput("modalGTExExpression", height = "640px")),
+        tabPanel("GTex (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
+        tabPanel("HPA RNA (TPM)", plotOutput("modalHpaRnaExpression", height = "640px")),
+        tabPanel("HPA RNA (TPM scaled)", plotOutput("modalHpaRnaScaledExpression", height = "640px")),
         tabPanel("Mutation types", tags$div(
           style = "overflow-x: scroll",
           tags$h5(paste0("Mutations for ", selectedSymbol), ":"),
@@ -122,11 +124,6 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       easyClose = TRUE
     ))
 
-    expression <- shiny.huge.gtexExpression[symbol %in% matchingGene$symbol]
-
-    rawValues <- expression[,list(tissue = tissue, value = tpm)]
-    scaledValues <- expression[,list(tissue = tissue, value = tpm_scaled)]
-
     callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
 
     uniqueMutations <- callsInGene[,
@@ -134,8 +131,19 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
     ]
 
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
-    output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    matchingGtexExpression <- shiny.huge.gtexExpression[symbol == matchingGene$symbol]
+    matchingHpaRnaExpression <- shiny.huge.hpaRnaExpression[symbol == matchingGene$symbol]
+
+    rawGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm)]
+    scaledGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_scaled)]
+
+    rawHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm)]
+    scaledHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm_scaled)]
+
+    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
+    output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    output$modalHpaRnaExpression <- shiny.huge.modalExpressionPlot(rawHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (raw TPM)", sep = ":"))
+    output$modalHpaRnaScaledExpression <- shiny.huge.modalExpressionPlot(scaledHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
 
   })
@@ -192,7 +200,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
+  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue)))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
 
@@ -241,7 +249,7 @@ shinyServer(function(input, output, session) {
     symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
     recognizedSymbols <- unique(shiny.huge.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 
-    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
+    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% unique(c(shiny.huge.gtexExpression$symbol, shiny.huge.hpaRnaExpression$symbol))]
     unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
     unrecognizedSymbolsText <- paste0(unrecognizedSymbols, collapse = "\n")
@@ -328,6 +336,7 @@ shinyServer(function(input, output, session) {
 
   output$annotationDownload <- shiny.huge.handleTableDownload(function () shiny.huge.geneTable, "annotation-")
   output$gtexDownload <- shiny.huge.handleTableDownload(function () shiny.huge.gtexExpression, "gtex-expression-")
+  output$hpaRnaDownload <- shiny.huge.handleTableDownload(function () shiny.huge.hpaRnaExpression, "hpa-rna-")
 
   ### GENE COMPARISON TAB
 
@@ -502,7 +511,12 @@ shinyServer(function(input, output, session) {
     gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
     gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
 
-    expressionFilteredGenes <- shiny.huge.gtexExpression[
+    gtexFilteredGenes <- shiny.huge.gtexExpression[
+      tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
+      tissue %in% input$expressions
+    ]
+
+    hpaRnaFilteredGene <- shiny.huge.hpaRnaExpression[
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
       tissue %in% input$expressions
     ]
@@ -510,7 +524,7 @@ shinyServer(function(input, output, session) {
     gt <- gt[
       input$sampleNumber[1] <= samples &
       input$sampleNumber[2] >= samples &
-      (is.null(input$expressions) | matchingGeneNames %in% expressionFilteredGenes$symbol)
+      (is.null(input$expressions) | matchingGeneNames %in% c(unique(gtexFilteredGenes$symbol), unique(hpaRnaFilteredGene$symbol)))
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
