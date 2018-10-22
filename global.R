@@ -36,8 +36,8 @@ cranPackages <- c(
 
 biocPackages <- c(
   "biomaRt",
-  "rentrez"
-  #"hpar"
+  "rentrez",
+  "hpar"
 )
 
 for (package in cranPackages) {
