@@ -32,7 +32,6 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
       coord_flip() +
       ggtitle(title) +
       xlab("Tissue") +
-      ylim(c(0, NA)) +
       ylab("Expression value") +
       scale_fill_manual(values = c("TRUE" = "springgreen", "FALSE" = "steelblue")) +
       scale_colour_manual(values = c("TRUE" = "springgreen4", "FALSE" = "steelblue4")) +
@@ -111,6 +110,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
         tabPanel("GTex (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
         tabPanel("HPA RNA (TPM)", plotOutput("modalHpaRnaExpression", height = "640px")),
         tabPanel("HPA RNA (TPM scaled)", plotOutput("modalHpaRnaScaledExpression", height = "640px")),
+        tabPanel("HPA Protein", plotOutput("modalHpaProteinExpression", height = "640px")),
         tabPanel("Mutation types", tags$div(
           style = "overflow-x: scroll",
           tags$h5(paste0("Mutations for ", selectedSymbol), ":"),
@@ -133,6 +133,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
 
     matchingGtexExpression <- shiny.huge.gtexExpression[symbol == matchingGene$symbol]
     matchingHpaRnaExpression <- shiny.huge.hpaRnaExpression[symbol == matchingGene$symbol]
+    matchingHpaProteinExpression <- shiny.huge.hpaProteinExpession[symbol == matchingGene$symbol]
 
     rawGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm)]
     scaledGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_scaled)]
@@ -140,10 +141,13 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     rawHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm)]
     scaledHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm_scaled)]
 
+    hpaProteinValues <- matchingHpaProteinExpression[,list(value = max(level)),by = tissue]
+
     output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
     output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
     output$modalHpaRnaExpression <- shiny.huge.modalExpressionPlot(rawHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (raw TPM)", sep = ":"))
     output$modalHpaRnaScaledExpression <- shiny.huge.modalExpressionPlot(scaledHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
+    output$modalHpaProteinExpression <- shiny.huge.modalExpressionPlot(hpaProteinValues, input$expressions, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
 
   })
@@ -197,10 +201,11 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateSliderInput(session, "minVariantDepth", value = 0)
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
+  updateSelectInput(session, "proteinLevel", selected = "Any")
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue)))
+  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue, shiny.huge.hpaProteinExpession$tissue)))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
 
@@ -249,7 +254,7 @@ shinyServer(function(input, output, session) {
     symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
     recognizedSymbols <- unique(shiny.huge.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 
-    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% unique(c(shiny.huge.gtexExpression$symbol, shiny.huge.hpaRnaExpression$symbol))]
+    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% unique(c(shiny.huge.gtexExpression$symbol, shiny.huge.hpaRnaExpression$symbol, shiny.huge.hpaProteinExpession$symbol))]
     unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
     unrecognizedSymbolsText <- paste0(unrecognizedSymbols, collapse = "\n")
@@ -337,6 +342,7 @@ shinyServer(function(input, output, session) {
   output$annotationDownload <- shiny.huge.handleTableDownload(function () shiny.huge.geneTable, "annotation-")
   output$gtexDownload <- shiny.huge.handleTableDownload(function () shiny.huge.gtexExpression, "gtex-expression-")
   output$hpaRnaDownload <- shiny.huge.handleTableDownload(function () shiny.huge.hpaRnaExpression, "hpa-rna-")
+  output$hpaProteinDownload <- shiny.huge.handleTableDownload(function () shiny.huge.hpaProteinExpession, "hpa-protein-")
 
   ### GENE COMPARISON TAB
 
@@ -469,6 +475,7 @@ shinyServer(function(input, output, session) {
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
     req(input$scaledTPM)
+    req(input$proteinLevel)
 
     ct <- fullCallTable()
 
@@ -497,7 +504,6 @@ shinyServer(function(input, output, session) {
 
     ct <- ct[!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates]
 
-
     # count mutations per gene per sample by multiple aggregations
     gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
     gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
@@ -516,15 +522,21 @@ shinyServer(function(input, output, session) {
       tissue %in% input$expressions
     ]
 
-    hpaRnaFilteredGene <- shiny.huge.hpaRnaExpression[
+    hpaRnaFilteredGenes <- shiny.huge.hpaRnaExpression[
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
+      tissue %in% input$expressions
+    ]
+
+    hpaProteinFilteredGenes <- shiny.huge.hpaProteinExpession[
+      input$proteinLevel <= level &
       tissue %in% input$expressions
     ]
 
     gt <- gt[
       input$sampleNumber[1] <= samples &
       input$sampleNumber[2] >= samples &
-      (is.null(input$expressions) | matchingGeneNames %in% c(unique(gtexFilteredGenes$symbol), unique(hpaRnaFilteredGene$symbol)))
+      (is.null(input$expressions) | matchingGeneNames %in% c(unique(gtexFilteredGenes$symbol), unique(hpaRnaFilteredGenes$symbol))) &
+      (is.null(input$expressions) | input$proteinLevel == "Any" | matchingGeneNames %in% hpaProteinFilteredGenes$symbol)
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 

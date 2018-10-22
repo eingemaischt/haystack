@@ -5,15 +5,7 @@ library(hashmap)
 library(hpar)
 
 shiny.huge.martMirror <- "www.ensembl.org"
-shiny.huge.allowedLevels <- c("High", "Medium", "Low")
-shiny.huge.allowedReliabilities <- c("Approved", "Supported")
-
-# shiny.huge.normalExpressions <- as.data.table(hpaNormalTissue[hpaNormalTissue$Level %in% shiny.huge.allowedLevels & hpaNormalTissue$Reliability %in% shiny.huge.allowedReliabilities,])
-# order factors for later use
-# shiny.huge.normalExpressions$Level <- factor(shiny.huge.normalExpressions$Level, levels = c("Not detected", "Low", "Medium", "High"), ordered = TRUE)
-
-# shiny.huge.rnaExpressions <- as.data.table(rnaGeneTissue[rnaGeneTissue$Value >= shiny.huge.minTPMLevel,])
-
+shiny.huge.allowedReliabilities <- c("Approved", "Supported", "Enhanced")
 
 shiny.huge.geneTable <- (function () {
 
@@ -88,6 +80,32 @@ shiny.huge.gtexExpression <- (function () {
   combined$tissue <- tolower(combined$tissue)
 
   return(combined[tpm > 0 & !is.na(symbol)])
+
+})()
+
+
+shiny.huge.hpaProteinExpession <- (function () {
+
+  if (exists("shiny.huge.hpaProteinExpession")) return(shiny.huge.hpaProteinExpession)
+
+  data("hpaNormalTissue")
+
+  normalizedExpression <- data.table(hpaNormalTissue, stringsAsFactors = FALSE)
+
+  hgncIndices <- shiny.huge.symbolToIndexMap[[normalizedExpression$Gene.name]]
+  isValidIndex <- !is.na(hgncIndices)
+
+  normalizedExpression <- normalizedExpression[isValidIndex]
+
+  colnames(normalizedExpression) <- tolower(colnames(normalizedExpression))
+
+  normalizedExpression$symbol <- shiny.huge.geneTable$symbol[hgncIndices[isValidIndex]]
+  normalizedExpression$level <- factor(normalizedExpression$level, ordered = TRUE, levels = c("Not detected", "Low", "Medium", "High"))
+
+  normalizedExpression <- normalizedExpression[reliability %in% shiny.huge.allowedReliabilities & level > "Not detected"]
+
+  rm(hpaNormalTissue, envir = .GlobalEnv)
+  return(normalizedExpression)
 
 })()
 

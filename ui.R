@@ -21,8 +21,12 @@ shinyUI(
           "1/1" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue))),
+        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(c(
+          shiny.huge.gtexExpression$tissue,
+          shiny.huge.hpaRnaExpression$tissue,
+          shiny.huge.hpaProteinExpession$tissue))),
         sliderInput("scaledTPM", label = "Scaled Expression TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
+        selectInput("proteinLevel", label = "Minimum HPA protein level", choices = c("Any", "Low", "Medium", "High"), selected = "None"),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
         actionButton("filterReset", label = "Reset filters"),
@@ -88,7 +92,7 @@ shinyUI(
             box(
               width = 3,
               title = "Symbols with no expression",
-              footer = "These symbols have a valid HGNC symbol but show no expression data in any tissue (or all tissues show tpm values of 0).",
+              footer = "These symbols have a valid HGNC symbol but show no expression data in any tissue (or all tissues show tpm values of 0 / 'not detected' protein level).",
               tags$div(
                 style = "overflow-y: scroll; max-height: 400px",
                 verbatimTextOutput("unexpressedSymbols")
@@ -157,7 +161,9 @@ shinyUI(
               hr(),
               downloadButton("gtexDownload", label = "Download expression table (GTEx)"),
               hr(),
-              downloadButton("hpaRnaDownload", label = "Download expression table (HPA RNA)")
+              downloadButton("hpaRnaDownload", label = "Download expression table (HPA RNA)"),
+              hr(),
+              downloadButton("hpaProteinDownload", label = "Download expression table (HPA protein)")
             )
           )
         ),
