@@ -484,10 +484,9 @@ shinyServer(function(input, output, session) {
 
     ct <- ct[
       (
-        ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
         ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
         ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
-        ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
+        ("unknown" %in% input$genotypes & (grepl(".", Genotype, fixed = TRUE) | Genotype == "0/0"))
       ) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
