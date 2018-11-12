@@ -106,9 +106,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
-        tabPanel("GTEx (TPM)", plotOutput("modalGTExExpression", height = "640px")),
         tabPanel("GTex (TPM scaled)", plotOutput("modalGTExScaledExpression", height = "640px")),
-        tabPanel("HPA RNA (TPM)", plotOutput("modalHpaRnaExpression", height = "640px")),
         tabPanel("HPA RNA (TPM scaled)", plotOutput("modalHpaRnaScaledExpression", height = "640px")),
         tabPanel("HPA Protein", plotOutput("modalHpaProteinExpression", height = "640px")),
         tabPanel("Mutation types", tags$div(
@@ -135,17 +133,13 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     matchingHpaRnaExpression <- shiny.huge.hpaRnaExpression[symbol == matchingGene$symbol]
     matchingHpaProteinExpression <- shiny.huge.hpaProteinExpession[symbol == matchingGene$symbol]
 
-    rawGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm)]
     scaledGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_scaled)]
 
-    rawHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm)]
     scaledHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm_scaled)]
 
     hpaProteinValues <- matchingHpaProteinExpression[,list(value = max(level)),by = tissue]
 
-    output$modalGTExExpression <- shiny.huge.modalExpressionPlot(rawGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (raw TPM)", sep = ": "))
     output$modalGTExScaledExpression <- shiny.huge.modalExpressionPlot(scaledGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
-    output$modalHpaRnaExpression <- shiny.huge.modalExpressionPlot(rawHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (raw TPM)", sep = ":"))
     output$modalHpaRnaScaledExpression <- shiny.huge.modalExpressionPlot(scaledHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
     output$modalHpaProteinExpression <- shiny.huge.modalExpressionPlot(hpaProteinValues, input$expressions, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
