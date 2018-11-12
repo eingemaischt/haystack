@@ -202,7 +202,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateSelectInput(session, "proteinLevel", selected = "Any")
-  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "hom_ref", "het", "hom_alt"))
+  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
   updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue, shiny.huge.hpaProteinExpession$tissue)))
@@ -484,10 +484,9 @@ shinyServer(function(input, output, session) {
 
     ct <- ct[
       (
-        ("hom_ref" %in% input$genotypes & Genotype == "0/0") |
         ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
         ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
-        ("unknown" %in% input$genotypes & grepl(".", Genotype, fixed = TRUE))
+        ("unknown" %in% input$genotypes & (grepl(".", Genotype, fixed = TRUE) | Genotype == "0/0"))
       ) &
       `Read depth` >= input$minReadDepth &
       (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &

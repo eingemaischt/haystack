@@ -16,7 +16,6 @@ shinyUI(
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
-          "0/0" = "hom_ref",
           "0/1, 1/0" = "het",
           "1/1" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
