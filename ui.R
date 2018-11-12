@@ -29,7 +29,9 @@ shinyUI(
         selectInput("proteinLevel", label = "Minimum HPA protein level", choices = c("Any", "Low", "Medium", "High"), selected = "None"),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
+        selectizeInput("chromosomes", label = "Chromosomes", multiple = TRUE, choices = "NA"),
         actionButton("filterReset", label = "Reset filters"),
+        # actionButton("filterDownload", label = "Download filters"),
         hr(),
         fluidPage(
           fluidRow(

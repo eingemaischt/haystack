@@ -208,6 +208,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue, shiny.huge.hpaProteinExpession$tissue)))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
+  updateSelectizeInput(session, "chromosomes", selected = NULL, choices = unique(callTable$Chr))
 
 }
 
@@ -493,7 +494,8 @@ shinyServer(function(input, output, session) {
       ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
       (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
       (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
-      (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)),
+      (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
+      (is.null(input$chromosomes) | Chr %in% input$chromosomes),
       input$selectedColumns, with = FALSE
     ]
 
