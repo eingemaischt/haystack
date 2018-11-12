@@ -20,12 +20,9 @@ shinyUI(
           "1/1" = "hom_alt"
         ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "Tissue expression", multiple = TRUE, choices = unique(c(
-          shiny.huge.gtexExpression$tissue,
-          shiny.huge.hpaRnaExpression$tissue,
-          shiny.huge.hpaProteinExpession$tissue))),
-        sliderInput("scaledTPM", label = "Scaled Expression TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
-        selectInput("proteinLevel", label = "Minimum HPA protein level", choices = c("Any", "Low", "Medium", "High"), selected = "None"),
+        selectizeInput("expressions", label = "GTEx tissue expression", multiple = TRUE, choices = unique(
+          shiny.huge.gtexExpression$tissue)),
+        sliderInput("scaledTPM", label = "Scaled GTEx TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
         selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
         selectizeInput("chromosomes", label = "Chromosomes", multiple = TRUE, choices = "NA"),

@@ -205,7 +205,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "het", "hom_alt"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(c(shiny.huge.gtexExpression$tissue, shiny.huge.hpaRnaExpression$tissue, shiny.huge.hpaProteinExpession$tissue)))
+  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
   updateSelectizeInput(session, "chromosomes", selected = NULL, choices = unique(callTable$Chr))
@@ -255,7 +255,7 @@ shinyServer(function(input, output, session) {
     symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
     recognizedSymbols <- unique(shiny.huge.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 
-    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% unique(c(shiny.huge.gtexExpression$symbol, shiny.huge.hpaRnaExpression$symbol, shiny.huge.hpaProteinExpession$symbol))]
+    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
     unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
     unrecognizedSymbolsText <- paste0(unrecognizedSymbols, collapse = "\n")
@@ -476,7 +476,6 @@ shinyServer(function(input, output, session) {
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
     req(input$scaledTPM)
-    req(input$proteinLevel)
 
     ct <- fullCallTable()
 
@@ -523,21 +522,10 @@ shinyServer(function(input, output, session) {
       tissue %in% input$expressions
     ]
 
-    hpaRnaFilteredGenes <- shiny.huge.hpaRnaExpression[
-      tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
-      tissue %in% input$expressions
-    ]
-
-    hpaProteinFilteredGenes <- shiny.huge.hpaProteinExpession[
-      input$proteinLevel <= level &
-      tissue %in% input$expressions
-    ]
-
     gt <- gt[
       input$sampleNumber[1] <= samples &
       input$sampleNumber[2] >= samples &
-      (is.null(input$expressions) | matchingGeneNames %in% c(unique(gtexFilteredGenes$symbol), unique(hpaRnaFilteredGenes$symbol))) &
-      (is.null(input$expressions) | input$proteinLevel == "Any" | matchingGeneNames %in% hpaProteinFilteredGenes$symbol)
+      (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol)
       ]
     ct <- ct[Symbol %in% gt$Symbol]
 
