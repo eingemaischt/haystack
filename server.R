@@ -433,10 +433,19 @@ shinyServer(function(input, output, session) {
 
     output$geneComparisonVenn <- renderPlot({
 
-      venn <- venn.diagram(list(
+      vennInput <- list(
         our_symbols = c(shiny.huge.geneTable$symbol[ourNonNAIndices], ourIndexTable[is.na(index), symbol]),
         their_symbols = c(shiny.huge.geneTable$symbol[theirNonNAIndices], theirIndexTable[is.na(index), symbol])
-      ), filename = NULL, na = "remove")
+      )
+
+      venn <- venn.diagram(
+        vennInput,
+        filename = NULL,
+        na = "remove",
+        fontfamily = "sans",
+        cat.fontfamily = "sans",
+        fill = c("#3c8dbc", "orangered1")
+      )
 
       grid.draw(venn)
     })
