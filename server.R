@@ -392,7 +392,14 @@ shinyServer(function(input, output, session) {
     req(comparedGenes())
     req(geneTable())
 
-    ourSymbols <- geneTable()$Symbol
+    if (input$geneComparisonUseFilters) {
+      ourSymbols <- geneTable()$Symbol
+    } else {
+      ourSymbols <- unique(fullCallTable()$Symbol)
+    }
+
+    ourSymbols <- sort(ourSymbols)
+
     theirSymbols <- comparedGenes()
 
     ourIndices <- shiny.huge.symbolToIndexMap[[ourSymbols]]

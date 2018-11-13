@@ -200,6 +200,12 @@ shinyUI(
               title = "Gene List Upload",
               footer = "You can upload a gene list here to compare to the genes found in the variant table. Every line must contain exactly one HGNC symbol.",
               fileInput("geneComparisonListUpload", label = "Upload genes for comparison")
+            ),
+            box(
+              width = 3,
+              title = "Filters",
+              footer = "Choose here if sidebar filters should be applied to symbols in our data or if all symbols should be considered regardless of filtering.",
+              checkboxInput("geneComparisonUseFilters", value = TRUE, label = "Apply sidebar filters to our symbols")
             )
           )
         ),
