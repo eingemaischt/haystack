@@ -125,7 +125,7 @@ shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal
     callsInGene <- callTableReactiveVal()[Symbol == selectedSymbol]
 
     uniqueMutations <- callsInGene[,
-      list("Mean read depth" = mean(`Read depth`), "Mean variant depth" = mean(`Variant depth`), "Samples" = length(unique(Sample))),
+      list("Samples" = length(unique(Sample))),
       by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
     ]
 
