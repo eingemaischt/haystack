@@ -1,4 +1,20 @@
+
+/* fix too big offsets for each filter */
 .sidebar-menu > .form-group.shiny-input-container {
   margin-bottom: 0;
   padding-top: 6px;
+}
+
+/* fix broken layout when page is smaller than sidebar */
+.wrapper {
+  height: auto !important;
+  position:relative;
+  overflow-x:hidden;
+  overflow-y:hidden;
+}
+
+/* fix broken download button in sidebar */
+.skin-blue .sidebar .shiny-download-link {
+  color: #444;
+  margin: 6px 5px 6px 15px;
 }

@@ -16,18 +16,18 @@ shinyUI(
         numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
         checkboxGroupInput("genotypes", label = "Genotype", choices = list(
           "unknown" = "unknown",
-          "0/1, 1/0" = "het",
-          "1/1" = "hom_alt"
-        ), selected = c("unknown", "hom_ref", "het", "hom_alt")),
+          "0/1, 1/0" = "0/1, 1/0",
+          "1/1" = "1/1"
+        ), selected = c("unknown", "0/1, 1/0", "1/1")),
         checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
         selectizeInput("expressions", label = "GTEx tissue expression", multiple = TRUE, choices = unique(
           shiny.huge.gtexExpression$tissue)),
         sliderInput("scaledTPM", label = "Scaled GTEx TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
-        selectizeInput("consequences", label = "Consequences", multiple = TRUE, choices = "NA"),
+        selectizeInput("consequences", label = "Consequence", multiple = TRUE, choices = "NA"),
         selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
-        selectizeInput("chromosomes", label = "Chromosomes", multiple = TRUE, choices = "NA"),
-        actionButton("filterReset", label = "Reset filters"),
-        # actionButton("filterDownload", label = "Download filters"),
+        selectizeInput("chromosomes", label = "Chromosome", multiple = TRUE, choices = "NA"),
+        actionButton("filterReset", label = "Reset filters", icon = icon("repeat")),
+        downloadButton("filterDownload", label = "Download filter settings"),
         hr(),
         fluidPage(
           fluidRow(
@@ -42,9 +42,6 @@ shinyUI(
     dashboardBody(
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
-        tags$style(
-          HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden}')
-        ),
         rclipboardSetup()
       ),
       tabItems(

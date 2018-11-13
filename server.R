@@ -196,7 +196,7 @@ shiny.huge.resetFilters <- function (session, callTable) {
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateSelectInput(session, "proteinLevel", selected = "Any")
-  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "het", "hom_alt"))
+  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
   updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
@@ -210,6 +210,44 @@ shiny.huge.copyToClipboardButton <- function (text, id) {
   return(renderUI({
     rclipButton(id, "Copy to clipboard", text, icon("clipboard"))
   }))
+}
+
+shiny.huge.intervalFilterString <- function(rangeInput) {
+
+  return(paste0("[", rangeInput[1], ",", rangeInput[2], "]"))
+
+}
+
+shiny.huge.collapsedListFilter <- function (listFilter) {
+
+  return(paste0(listFilter, collapse = ","))
+
+}
+
+shiny.huge.filterSettingsReactiveTable <- function (input) {
+
+  return(function () {
+
+    filters <- data.table(
+      `Number of samples affected` = shiny.huge.intervalFilterString(input$sampleNumber),
+      `Minimum read depth` = input$minReadDepth,
+      `Minimum variant depth` = input$minVariantDepth,
+      `Frequency (variant depth / read depth)` = shiny.huge.intervalFilterString(input$readVariantFrequency),
+      `Maximum AF Popmax` = input$maxAFPopmax,
+      `Genotype` = shiny.huge.collapsedListFilter(input$genotypes),
+      `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
+      `GTEx tissue expression` = shiny.huge.collapsedListFilter(input$expressions),
+      `Scaled GTEx TPM value` = shiny.huge.intervalFilterString(input$scaledTPM),
+      `Consequence` = shiny.huge.collapsedListFilter(input$consequences),
+      `Study` = shiny.huge.collapsedListFilter(input$studies),
+      `Chromosome` = shiny.huge.collapsedListFilter(input$chromosomes)
+    )
+
+    molten <- melt(filters, variable.name = "filter", measure.vars = colnames(filters))
+
+    return(molten)
+  })
+
 }
 
 shinyServer(function(input, output, session) {
@@ -461,6 +499,8 @@ shinyServer(function(input, output, session) {
 
   })
 
+  output$filterDownload <- shiny.huge.handleTableDownload(shiny.huge.filterSettingsReactiveTable(input), "filter-settings-")
+
   observe({
 
     req(fullCallTable())
@@ -477,8 +517,8 @@ shinyServer(function(input, output, session) {
 
     ct <- ct[
       (
-        ("het" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
-        ("hom_alt" %in% input$genotypes & Genotype == "1/1") |
+        ("0/1, 1/0" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
+        ("1/1" %in% input$genotypes & Genotype == "1/1") |
         ("unknown" %in% input$genotypes & (grepl(".", Genotype, fixed = TRUE) | Genotype == "0/0"))
       ) &
       `Read depth` >= input$minReadDepth &
