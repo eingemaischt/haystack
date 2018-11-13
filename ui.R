@@ -174,23 +174,32 @@ shinyUI(
           fluidRow(
             box(
               width = 4,
-              style = "overflow-y: scroll; max-height: 400px",
               title = "Symbols only in our data",
-              verbatimTextOutput("ourSymbols"),
+              tags$div(
+                style = "overflow-y: scroll; max-height: 400px",
+                verbatimTextOutput("ourSymbols")
+              ),
+              hr(),
               uiOutput("ourSymbolsToClipboard")
             ),
             box(
               width = 4,
-              style = "overflow-y: scroll; max-height: 400px",
               title = "Intersecting symbols",
-              verbatimTextOutput("intersectingSymbols"),
+              tags$div(
+                style = "overflow-y: scroll; max-height: 400px",
+                verbatimTextOutput("intersectingSymbols")
+              ),
+              hr(),
               uiOutput("intersectingSymbolsToClipboard")
             ),
             box(
               width = 4,
-              style = "overflow-y: scroll; max-height: 400px",
               title = "Symbols only in their data",
-              verbatimTextOutput("theirSymbols"),
+              tags$div(
+                style = "overflow-y: scroll; max-height: 400px",
+                verbatimTextOutput("theirSymbols")
+              ),
+              hr(),
               uiOutput("theirSymbolsToClipboard")
             )
           ),
