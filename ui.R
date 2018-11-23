@@ -60,13 +60,15 @@ shinyUI(
             box(
               title = "Upload",
               width = 6,
-              p("You can upload your variant call table here. Make sure to upload only correctly formatted files (comma separated, periods as decimal seperators)."),
+              p("You can upload your variant call table here. Make sure to upload only correctly formatted files (comma separated, periods as decimal seperators, variant table as first sheet for .xlsx files). Both .csv and .xlsx files are supported."),
               hr(),
-              fileInput("callFile", "Choose CSV File",
+              fileInput("callFile", "Choose file",
                         accept = c(
                           "text/csv",
                           "text/comma-separated-values,text/plain",
-                          ".csv")
+                          ".csv",
+                          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                          ".xlsx")
               )
             ),
             box(

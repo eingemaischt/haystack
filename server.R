@@ -72,7 +72,35 @@ shiny.huge.isValidTable <- function (dt) {
 
 shiny.huge.readCallTable <- function (fileName) {
 
-  ct <- fread(fileName)
+  lowercaseFileName <- tolower(fileName)
+
+  if (endsWith(lowercaseFileName, ".csv")) {
+
+    ct <- fread(fileName)
+
+  } else if (endsWith(lowercaseFileName, ".xlsx")) {
+
+    # xlsx files are just parsed as character data frame,
+    # so we need to convert column types to data tables.
+    # the simplest way is to write the .xlsx to .csv and
+    # then read using fread
+    xlsxTable <- read.xlsx(fileName, check.names = FALSE)
+
+    # check.names is still replacing spaces with dots. We replace them
+    # to have consistent column names, see also:
+    # https://github.com/awalker89/openxlsx/issues/102
+    colnames(xlsxTable) <- gsub("\\.", " ", colnames(xlsxTable))
+
+    tmpFile <- tempfile()
+    fwrite(xlsxTable, tmpFile)
+    ct <- fread(tmpFile)
+    file.remove(tmpFile)
+
+  } else {
+    return(NULL)
+  }
+
+
 
   if (is.numeric(ct$Chr)) {
     ct$Chr <- as.character(ct$Chr)
