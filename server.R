@@ -158,11 +158,23 @@ shiny.huge.showErrorModal <- function (errorMessage, session) {
 
 }
 
-shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix) {
+shiny.huge.csvWriteHandler <- function (dataTable, fileName) {
+
+  fwrite(dataTable, fileName)
+
+}
+
+shiny.huge.xlsxWriteHandler <- function (dataTable, fileName) {
+
+  write.xlsx(dataTable, fileName, asTable = TRUE)
+
+}
+
+shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix, fileExtension = ".csv", writeHandler = shiny.huge.csvWriteHandler) {
 
   return(downloadHandler(
     filename = function() {
-      paste0(filePrefix, Sys.time(), ".csv")
+      paste0(filePrefix, Sys.time(), fileExtension)
     },
     content = function (con) {
 
@@ -176,7 +188,7 @@ shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix) {
 
       }
 
-      fwrite(writtenData, con)
+      writeHandler(writtenData, con)
     }
   ))
 
@@ -339,7 +351,8 @@ shinyServer(function(input, output, session) {
                         )))
   })
 
-  output$filteredCallTableDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls-")
+  output$filteredCallTableCsvDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls-")
+  output$filteredCallTableXlsxDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls", ".xlsx", shiny.huge.xlsxWriteHandler)
 
   ### GENE TABLE TAB
 

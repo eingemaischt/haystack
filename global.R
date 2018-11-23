@@ -27,6 +27,7 @@ cranPackages <- c(
   "hashmap",
   "httr",
   "ggplot2",
+  "openxlsx",
   "htmlwidgets",
   "DT",
   "VennDiagram",
