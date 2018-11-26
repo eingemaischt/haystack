@@ -76,5 +76,8 @@ source("tabs/callTable/callTableTabUI.R")
 source("tabs/geneTable/geneTableTab.R")
 source("tabs/geneTable/geneTableTabUI.R")
 
+source("tabs/annotations/annotationsTab.R")
+source("tabs/annotations/annotationsTabUI.R")
+
 source("sidebarFiltering/sidebarFiltering.R")
 source("sidebarFiltering/sidebarFilteringUI.R")

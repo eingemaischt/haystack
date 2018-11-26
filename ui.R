@@ -26,31 +26,7 @@ shinyUI(
           geneTableTabUI("geneTableTab")
         ),
         tabItem(tabName = "annotationTab",
-          fluidRow(
-            box(
-              style = "overflow-x: scroll",
-              title = "Annotation Table",
-              width = 12,
-              solidHeader = TRUE,
-              footer = "This window shows the annotation data used for this app, it is extracted from the HGNC.",
-              DT::dataTableOutput("annotationTable")
-            )
-          ),
-          fluidRow(
-            box(
-              width = 6,
-              solidHeader = TRUE,
-              footer = "Please note that downloads always contain the whole tables. Filters and sorting orders do not apply.",
-              title = "Download",
-              tableDownloadUI("annotationDownload", "gene annotations"),
-              hr(),
-              tableDownloadUI("gtexDownload", "GTEx table"),
-              hr(),
-              tableDownloadUI("hpaRnaDownload", "HPA RNA table"),
-              hr(),
-              tableDownloadUI("hpaProteinDownload", "HPA protein table")
-            )
-          )
+          annotationsTabUI("annotationsTab")
         ),
         tabItem(tabName = "geneComparisonTab",
           fluidRow(
