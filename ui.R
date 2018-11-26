@@ -51,8 +51,7 @@ shinyUI(
               style = "height: 100%",
               p("You can download the filtered variant call table here. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."),
               hr(),
-              downloadButton("filteredCallTableCsvDownload", label = "Download as CSV"),
-              downloadButton("filteredCallTableXlsxDownload", label = "Download as XLSX")
+              tableDownloadUI("filteredCallDownload", "filtered calls")
             )
           ),
           fluidRow(
@@ -107,7 +106,7 @@ shinyUI(
               width = 6,
               solidHeader = TRUE,
               title = "Download",
-              downloadButton("geneDownload", label = "Download table"),
+              tableDownloadUI("geneDownload", "genes"),
               footer = "This download contains the filtered genes only. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."
             )
           )
@@ -125,17 +124,17 @@ shinyUI(
           ),
           fluidRow(
             box(
-              width = 4,
+              width = 6,
               solidHeader = TRUE,
               footer = "Please note that downloads always contain the whole tables. Filters and sorting orders do not apply.",
               title = "Download",
-              downloadButton("annotationDownload", label = "Download gene annotation table (HGNC/NCBI)"),
+              tableDownloadUI("annotationDownload", "gene annotations"),
               hr(),
-              downloadButton("gtexDownload", label = "Download expression table (GTEx)"),
+              tableDownloadUI("gtexDownload", "GTEx table"),
               hr(),
-              downloadButton("hpaRnaDownload", label = "Download expression table (HPA RNA)"),
+              tableDownloadUI("hpaRnaDownload", "HPA RNA table"),
               hr(),
-              downloadButton("hpaProteinDownload", label = "Download expression table (HPA protein)")
+              tableDownloadUI("hpaProteinDownload", "HPA protein table")
             )
           )
         ),

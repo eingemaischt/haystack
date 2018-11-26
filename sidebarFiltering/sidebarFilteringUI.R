@@ -21,15 +21,6 @@ sidebarFilteringUI <- function (id) {
     selectizeInput(ns("studies"), label = "Study", multiple = TRUE, choices = "NA"),
     selectizeInput(ns("chromosomes"), label = "Chromosome", multiple = TRUE, choices = "NA"),
     actionButton(ns("filterReset"), label = "Reset filters", icon = icon("repeat")),
-    downloadButton(ns("filterDownload"), label = "Download filter settings"),
-    hr(),
-    fluidPage(
-      fluidRow(
-        column(width = 12, textOutput(ns("numFilteredRows")))
-      ),
-      fluidRow(
-        column(width = 12, textOutput(ns("numTotalRows")))
-      )
-    )
+    tableDownloadUI(ns("filterDownload"), "filters")
   )
 }

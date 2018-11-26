@@ -126,41 +126,7 @@ shiny.huge.showErrorModal <- function (errorMessage, session) {
 
 }
 
-shiny.huge.csvWriteHandler <- function (dataTable, fileName) {
 
-  fwrite(dataTable, fileName)
-
-}
-
-shiny.huge.xlsxWriteHandler <- function (dataTable, fileName) {
-
-  write.xlsx(dataTable, fileName, asTable = TRUE)
-
-}
-
-shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix, fileExtension = ".csv", writeHandler = shiny.huge.csvWriteHandler) {
-
-  return(downloadHandler(
-    filename = function() {
-      paste0(filePrefix, Sys.time(), fileExtension)
-    },
-    content = function (con) {
-
-      if(is.null(tableReactiveValue())) {
-
-        writtenData <- data.table("NO DATA AVAILABLE")
-
-      } else {
-
-        writtenData <- tableReactiveValue()
-
-      }
-
-      writeHandler(writtenData, con)
-    }
-  ))
-
-}
 
 shiny.huge.copyToClipboardButton <- function (text, id) {
   return(renderUI({
@@ -313,8 +279,7 @@ shinyServer(function(input, output, session) {
                         )))
   })
 
-  output$filteredCallTableCsvDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls-")
-  output$filteredCallTableXlsxDownload <- shiny.huge.handleTableDownload(filteredCallTable, "filtered-calls", ".xlsx", shiny.huge.xlsxWriteHandler)
+  callModule(tableDownload, "filteredCallDownload", filteredCallTable, "filtered-calls-")
 
   ### GENE TABLE TAB
 
@@ -328,7 +293,7 @@ shinyServer(function(input, output, session) {
     )
   })
 
-  output$geneDownload <- shiny.huge.handleTableDownload(geneTable, "genes-")
+  callModule(tableDownload, "geneDownload", geneTable, "genes-")
 
   ### ANNOTATION TABLE TAB
 
@@ -347,10 +312,10 @@ shinyServer(function(input, output, session) {
                            )))
                          )))
 
-  output$annotationDownload <- shiny.huge.handleTableDownload(function () shiny.huge.geneTable, "annotation-")
-  output$gtexDownload <- shiny.huge.handleTableDownload(function () shiny.huge.gtexExpression, "gtex-expression-")
-  output$hpaRnaDownload <- shiny.huge.handleTableDownload(function () shiny.huge.hpaRnaExpression, "hpa-rna-")
-  output$hpaProteinDownload <- shiny.huge.handleTableDownload(function () shiny.huge.hpaProteinExpession, "hpa-protein-")
+  callModule(tableDownload, "annotationDownload", function () shiny.huge.geneTable, "annotation-")
+  callModule(tableDownload, "gtexDownload", function () shiny.huge.gtexExpression, "gtex-expression-")
+  callModule(tableDownload, "hpaRnaDownload", function () shiny.huge.hpaRnaExpression, "hpa-rna-")
+  callModule(tableDownload, "hpaProteinDownload", function () shiny.huge.hpaProteinExpession, "hpa-protein-")
 
   ### GENE COMPARISON TAB
 
@@ -425,11 +390,6 @@ shinyServer(function(input, output, session) {
       grid.draw(venn)
     })
   })
-
-  ### SIDEBAR
-
-  output$numTotalRows    <- renderText({ paste("Total calls in table: ",    nrow(fullCallTable())) })
-  output$numFilteredRows <- renderText({ paste("Filtered calls in table: ", nrow(filteredCallTable())) })
 
   ### REACTOME TAB
 

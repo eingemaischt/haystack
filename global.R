@@ -58,5 +58,8 @@ futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 source("annotation.R")
 
+source("util/tableDownloadUI.R")
+source("util/tableDownload.R")
+
 source("sidebarFiltering/sidebarFiltering.R")
 source("sidebarFiltering/sidebarFilteringUI.R")

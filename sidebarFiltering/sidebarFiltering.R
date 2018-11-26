@@ -63,6 +63,7 @@ filterSettingsReactiveTable <- function (input) {
 
 sidebarFiltering <- function (input, output, session, fullCallTable, selectedColumns) {
 
+  callModule(tableDownload, "filterDownload", filterSettingsReactiveTable(input), "filter-settings-")
 
   filteredCallTable <- reactiveVal()
   geneTable <- reactiveVal()
@@ -74,9 +75,6 @@ sidebarFiltering <- function (input, output, session, fullCallTable, selectedCol
     resetFilters(session, fullCallTable())
 
   })
-
-  # TODO: fix table download
-  #output$filterDownload <- shiny.huge.handleTableDownload(shiny.huge.filterSettingsReactiveTable(input), "filter-settings-")
 
   observe({
 
