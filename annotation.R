@@ -9,8 +9,8 @@ shiny.huge.allowedReliabilities <- c("Approved", "Supported", "Enhanced")
 
 shiny.huge.geneTable <- (function () {
 
-  hgncTable <- fread("hgnc_complete_set.txt")
-  ncbiTable <- fread("ncbi-gene-descriptions.csv")
+  hgncTable <- fread(cmd = "zcat annotation/hgnc_complete_set.txt")
+  ncbiTable <- fread(cmd = "zcat annotation/ncbi-gene-descriptions.csv")
 
   geneTable <- merge(hgncTable, ncbiTable, by.x = "symbol", by.y = "hgnc_symbol", all = TRUE)
 
@@ -58,7 +58,7 @@ shiny.huge.gtexExpression <- (function () {
 
   gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
 
-  rawGtexData <- fread(gtexFile, stringsAsFactors = FALSE)
+  rawGtexData <- fread(cmd = paste0("zcat annotation/", gtexFile))
 
   scaledGtexData <- rawGtexData
   scaledGtexData[, 3:ncol(scaledGtexData)] <- data.table(t(apply(scaledGtexData[,-(1:2)], 1, function (x) {
