@@ -99,8 +99,8 @@ callTable <- function (input, output, session) {
     unrecognizedInTotal <- length(unrecognizedSymbols)
     unexpressedInTotal <- length(unexpressedSymbols)
 
-    fractionUnrecognized <- round(unrecognizedInTotal / symbolsInTotal, digits = 2) * 100
-    fractionUnexpressed <- round(unexpressedInTotal / symbolsInTotal, digits = 2) * 100
+    fractionUnrecognized <- round(unrecognizedInTotal / symbolsInTotal, digits = 4) * 100
+    fractionUnexpressed <- round(unexpressedInTotal / symbolsInTotal, digits = 4) * 100
 
     output$unrecognizedSymbols <- renderText(unrecognizedSymbolsText)
     output$unexpressedSymbols <- renderText(unexpressedSymbolsText)

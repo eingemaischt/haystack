@@ -76,8 +76,14 @@ source("tabs/callTable/callTableTabUI.R")
 source("tabs/geneTable/geneTableTab.R")
 source("tabs/geneTable/geneTableTabUI.R")
 
+source("tabs/geneComparison/geneComparisonTab.R")
+source("tabs/geneComparison/geneComparisonTabUI.R")
+
 source("tabs/annotations/annotationsTab.R")
 source("tabs/annotations/annotationsTabUI.R")
+
+source("tabs/pathways/pathwaysTab.R")
+source("tabs/pathways/pathwaysTabUI.R")
 
 source("sidebarFiltering/sidebarFiltering.R")
 source("sidebarFiltering/sidebarFilteringUI.R")
