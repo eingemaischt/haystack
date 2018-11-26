@@ -23,6 +23,17 @@ resetFilters <- function (session, callTable) {
 
 }
 
+handleErrorNotification <- function (value, filterName, notificationId) {
+
+  if (is.na(value)) {
+    showNotification(paste0("Invalid number in ", filterName, " filter"), closeButton = FALSE, type = "error", duration = NULL, id = notificationId)
+  } else {
+    removeNotification(notificationId)
+  }
+
+}
+
+
 intervalFilterString <- function(rangeInput) {
 
   return(paste0("[", rangeInput[1], ",", rangeInput[2], "]"))
@@ -80,8 +91,7 @@ sidebarFiltering <- function (input, output, session, fullCallTable, selectedCol
 
     maxPopMax <- input$maxAFPopmax
 
-    # TODO: handle error notification
-    #shiny.huge.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
+    handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
 
   })
 

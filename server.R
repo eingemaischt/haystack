@@ -42,18 +42,6 @@ shiny.huge.modalExpressionPlot <- function (expressions, expressionFilter, title
 
 }
 
-shiny.huge.handleErrorNotification <- function (value, filterName, notificationId) {
-
-  if (is.na(value)) {
-    showNotification(paste0("Invalid number in ", filterName, " filter"), closeButton = FALSE, type = "error", duration = NULL, id = notificationId)
-  } else {
-    removeNotification(notificationId)
-  }
-
-}
-
-
-
 shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, output) {
 
   return({
