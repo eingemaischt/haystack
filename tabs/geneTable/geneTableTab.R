@@ -1,4 +1,4 @@
-geneTableTab <- function (input, output, session, geneTable, filteredCallTable) {
+geneTableTab <- function (input, output, session, geneTable, filteredCallTable, expressionFilter) {
 
   callModule(tableDownload, "geneDownload", geneTable, "genes-")
 
@@ -16,7 +16,7 @@ geneTableTab <- function (input, output, session, geneTable, filteredCallTable) 
                geneExpressionModal(
                  geneTable()[input$geneTable_rows_selected, Symbol],
                  filteredCallTable,
-                 input,
+                 expressionFilter(),
                  output,
                  "geneTableTab")
   )

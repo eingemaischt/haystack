@@ -70,7 +70,7 @@ filterSettingsReactiveTable <- function (input) {
 
 }
 
-sidebarFiltering <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns) {
+sidebarFiltering <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter) {
 
   geneTable <- reactiveVal()
 
@@ -89,6 +89,12 @@ sidebarFiltering <- function (input, output, session, fullCallTable, filteredCal
     maxPopMax <- input$maxAFPopmax
 
     handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
+
+  })
+
+  observe({
+
+    expressionFilter(input$expressions)
 
   })
 

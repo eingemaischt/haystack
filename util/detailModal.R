@@ -40,7 +40,7 @@ modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
 }
 
-geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, output, id) {
+geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, expressionFilter, output, id) {
 
   ns <- NS(id)
 
@@ -95,9 +95,9 @@ geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, ou
 
     hpaProteinValues <- matchingHpaProteinExpression[,list(value = max(level)),by = tissue]
 
-    output$modalGTExScaledExpression <- modalExpressionPlot(scaledGtexValues, input$expressions, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
-    output$modalHpaRnaScaledExpression <- modalExpressionPlot(scaledHpaRnaValues, input$expressions, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
-    output$modalHpaProteinExpression <- modalExpressionPlot(hpaProteinValues, input$expressions, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
+    output$modalGTExScaledExpression <- modalExpressionPlot(scaledGtexValues, expressionFilter, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    output$modalHpaRnaScaledExpression <- modalExpressionPlot(scaledHpaRnaValues, expressionFilter, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
+    output$modalHpaProteinExpression <- modalExpressionPlot(hpaProteinValues, expressionFilter, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
 
   })

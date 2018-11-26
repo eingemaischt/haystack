@@ -62,6 +62,7 @@ callTable <- function (input, output, session) {
 
   fullCallTable <- reactiveVal()
   filteredCallTable <- reactiveVal()
+  expressionFilter <- reactiveVal()
 
   callModule(tableDownload, "filteredCallDownload", filteredCallTable, "filtered-calls-")
 
@@ -138,7 +139,7 @@ callTable <- function (input, output, session) {
                 geneExpressionModal(
                  filteredCallTable()[input$callTable_rows_selected]$Symbol,
                  filteredCallTable,
-                 input,
+                 expressionFilter(),
                  output,
                  "callTableTab")
   )
@@ -150,6 +151,7 @@ callTable <- function (input, output, session) {
   return(list(
     filteredCallTable = filteredCallTable,
     fullCallTable = fullCallTable,
-    selectedColumns = reactive({ input$selectedColumns })
+    selectedColumns = reactive({ input$selectedColumns }),
+    expressionFilter = expressionFilter
   ))
 }
