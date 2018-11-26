@@ -5,8 +5,6 @@ resetFilters <- function (session, callTable) {
 
   studies <- unique(callTable$Studie)
 
-  # TODO: column selection?
-  #updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0)
   updateSliderInput(session, "minVariantDepth", value = 0)
@@ -72,12 +70,11 @@ filterSettingsReactiveTable <- function (input) {
 
 }
 
-sidebarFiltering <- function (input, output, session, fullCallTable, selectedColumns) {
+sidebarFiltering <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns) {
+
+  geneTable <- reactiveVal()
 
   callModule(tableDownload, "filterDownload", filterSettingsReactiveTable(input), "filter-settings-")
-
-  filteredCallTable <- reactiveVal()
-  geneTable <- reactiveVal()
 
   observeEvent(input$filterReset, {
 
@@ -106,8 +103,7 @@ sidebarFiltering <- function (input, output, session, fullCallTable, selectedCol
   observe({
 
     req(fullCallTable())
-    # TODO: column selection?
-    #req(selectedColumns)
+    req(selectedColumns())
     req(input$sampleNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
@@ -130,9 +126,8 @@ sidebarFiltering <- function (input, output, session, fullCallTable, selectedCol
         (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
         (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
-        (is.null(input$chromosomes) | Chr %in% input$chromosomes)#,
-      # TODO: column selection?
-      #selectedColumns, with = FALSE
+        (is.null(input$chromosomes) | Chr %in% input$chromosomes),
+      selectedColumns(), with = FALSE
       ]
 
     # Filter for compound heterozygosity only after other variant filters have been applied
@@ -172,8 +167,5 @@ sidebarFiltering <- function (input, output, session, fullCallTable, selectedCol
 
   })
 
-  return(list(
-    geneTable = geneTable,
-    filteredCallTable = filteredCallTable
-  ))
+  return(geneTable)
 }
