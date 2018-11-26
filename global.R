@@ -57,3 +57,6 @@ for (package in biocPackages) {
 futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 
 source("annotation.R")
+
+source("sidebarFiltering/sidebarFiltering.R")
+source("sidebarFiltering/sidebarFilteringUI.R")

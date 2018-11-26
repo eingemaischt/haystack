@@ -9,34 +9,8 @@ shinyUI(
         menuItem("Gene comparison", tabName = "geneComparisonTab", icon = icon("refresh")),
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
-        sliderInput("sampleNumber",  label = "Number of samples affected", min = 0, max = 100, value = c(0, 100), step = 1),
-        sliderInput("minReadDepth", label = "Minimum read depth", min = 0, max = 200, value = 0),
-        sliderInput("minVariantDepth", label = "Minimum variant depth", min = 0, max = 200, value = 0),
-        sliderInput("readVariantFrequency", label = "Frequency (variant depth / read depth)", min = 0, max = 1, step = 0.05, value = c(0,1)),
-        numericInput("maxAFPopmax", label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
-        checkboxGroupInput("genotypes", label = "Genotype", choices = list(
-          "unknown" = "unknown",
-          "0/1, 1/0" = "0/1, 1/0",
-          "1/1" = "1/1"
-        ), selected = c("unknown", "0/1, 1/0", "1/1")),
-        checkboxInput("onlyCompoundHeterozygosity", label = "Show only compound heterozygosity candidates", value = FALSE),
-        selectizeInput("expressions", label = "GTEx tissue expression", multiple = TRUE, choices = unique(
-          shiny.huge.gtexExpression$tissue)),
-        sliderInput("scaledTPM", label = "Scaled GTEx TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
-        selectizeInput("consequences", label = "Consequence", multiple = TRUE, choices = "NA"),
-        selectizeInput("studies", label = "Study", multiple = TRUE, choices = "NA"),
-        selectizeInput("chromosomes", label = "Chromosome", multiple = TRUE, choices = "NA"),
-        actionButton("filterReset", label = "Reset filters", icon = icon("repeat")),
-        downloadButton("filterDownload", label = "Download filter settings"),
-        hr(),
-        fluidPage(
-          fluidRow(
-            column(width = 12, textOutput("numFilteredRows"))
-          ),
-          fluidRow(
-            column(width = 12, textOutput("numTotalRows"))
-          )
-        )
+
+        sidebarFilteringUI("sidebarFiltering")
       )
     ),
     dashboardBody(

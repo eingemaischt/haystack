@@ -52,67 +52,7 @@ shiny.huge.handleErrorNotification <- function (value, filterName, notificationI
 
 }
 
-shiny.huge.isValidTable <- function (dt) {
 
-  characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
-  numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
-  expectedColumns <- c(characterColumns, numericColumns)
-
-  if (any(!expectedColumns %in% colnames(dt))) return(FALSE)
-
-  actualCharacterColumnTypes <- sapply(dt[,..characterColumns], class)
-  actualNumericColumnTypes <- sapply(dt[,..numericColumns], class)
-
-  return(
-    all(actualCharacterColumnTypes == "character") &&
-    all(actualNumericColumnTypes %in% c("numeric", "integer", "logical"))
-  )
-
-}
-
-shiny.huge.readCallTable <- function (fileName) {
-
-  lowercaseFileName <- tolower(fileName)
-
-  if (endsWith(lowercaseFileName, ".csv")) {
-
-    ct <- fread(fileName)
-
-  } else if (endsWith(lowercaseFileName, ".xlsx")) {
-
-    # xlsx files are just parsed as character data frame,
-    # so we need to convert column types to data tables.
-    # the simplest way is to write the .xlsx to .csv and
-    # then read using fread
-    xlsxTable <- read.xlsx(fileName, check.names = FALSE)
-
-    # check.names is still replacing spaces with dots. We replace them
-    # to have consistent column names, see also:
-    # https://github.com/awalker89/openxlsx/issues/102
-    colnames(xlsxTable) <- gsub("\\.", " ", colnames(xlsxTable))
-
-    tmpFile <- tempfile()
-    fwrite(xlsxTable, tmpFile)
-    ct <- fread(tmpFile)
-    file.remove(tmpFile)
-
-  } else {
-    return(NULL)
-  }
-
-
-
-  if (is.numeric(ct$Chr)) {
-    ct$Chr <- as.character(ct$Chr)
-  }
-
-  if (shiny.huge.isValidTable(ct)) {
-    return(ct)
-  } else {
-    return(NULL)
-  }
-
-}
 
 shiny.huge.geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, input, output) {
 
@@ -222,80 +162,83 @@ shiny.huge.handleTableDownload <- function (tableReactiveValue, filePrefix, file
 
 }
 
-shiny.huge.resetFilters <- function (session, callTable) {
-
-  numberOfSamples <- length(unique(callTable$Sample))
-  consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
-
-  studies <- unique(callTable$Studie)
-
-  updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(callTable), selected = colnames(callTable))
-  updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
-  updateSliderInput(session, "minReadDepth", value = 0)
-  updateSliderInput(session, "minVariantDepth", value = 0)
-  updateSliderInput(session, "readVariantFrequency", value = c(0,1))
-  updateSliderInput(session, "scaledTPM", value = c(0,1))
-  updateSelectInput(session, "proteinLevel", selected = "Any")
-  updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
-  updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
-  updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
-  updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
-  updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
-  updateSelectizeInput(session, "chromosomes", selected = NULL, choices = unique(callTable$Chr))
-
-}
-
 shiny.huge.copyToClipboardButton <- function (text, id) {
   return(renderUI({
     rclipButton(id, "Copy to clipboard", text, icon("clipboard"))
   }))
 }
 
-shiny.huge.intervalFilterString <- function(rangeInput) {
 
-  return(paste0("[", rangeInput[1], ",", rangeInput[2], "]"))
+shiny.huge.readCallTable <- function (fileName) {
+
+  lowercaseFileName <- tolower(fileName)
+
+  if (endsWith(lowercaseFileName, ".csv")) {
+
+    ct <- fread(fileName)
+
+  } else if (endsWith(lowercaseFileName, ".xlsx")) {
+
+    # xlsx files are just parsed as character data frame,
+    # so we need to convert column types to data tables.
+    # the simplest way is to write the .xlsx to .csv and
+    # then read using fread
+    xlsxTable <- read.xlsx(fileName, check.names = FALSE)
+
+    # check.names is still replacing spaces with dots. We replace them
+    # to have consistent column names, see also:
+    # https://github.com/awalker89/openxlsx/issues/102
+    colnames(xlsxTable) <- gsub("\\.", " ", colnames(xlsxTable))
+
+    tmpFile <- tempfile()
+    fwrite(xlsxTable, tmpFile)
+    ct <- fread(tmpFile)
+    file.remove(tmpFile)
+
+  } else {
+    return(NULL)
+  }
+
+
+
+  if (is.numeric(ct$Chr)) {
+    ct$Chr <- as.character(ct$Chr)
+  }
+
+  if (shiny.huge.isValidTable(ct)) {
+    return(ct)
+  } else {
+    return(NULL)
+  }
 
 }
 
-shiny.huge.collapsedListFilter <- function (listFilter) {
+shiny.huge.isValidTable <- function (dt) {
 
-  return(paste0(listFilter, collapse = ","))
+  characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
+  numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
+  expectedColumns <- c(characterColumns, numericColumns)
 
-}
+  if (any(!expectedColumns %in% colnames(dt))) return(FALSE)
 
-shiny.huge.filterSettingsReactiveTable <- function (input) {
+  actualCharacterColumnTypes <- sapply(dt[,..characterColumns], class)
+  actualNumericColumnTypes <- sapply(dt[,..numericColumns], class)
 
-  return(function () {
-
-    filters <- data.table(
-      `Number of samples affected` = shiny.huge.intervalFilterString(input$sampleNumber),
-      `Minimum read depth` = input$minReadDepth,
-      `Minimum variant depth` = input$minVariantDepth,
-      `Frequency (variant depth / read depth)` = shiny.huge.intervalFilterString(input$readVariantFrequency),
-      `Maximum AF Popmax` = input$maxAFPopmax,
-      `Genotype` = shiny.huge.collapsedListFilter(input$genotypes),
-      `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
-      `GTEx tissue expression` = shiny.huge.collapsedListFilter(input$expressions),
-      `Scaled GTEx TPM value` = shiny.huge.intervalFilterString(input$scaledTPM),
-      `Consequence` = shiny.huge.collapsedListFilter(input$consequences),
-      `Study` = shiny.huge.collapsedListFilter(input$studies),
-      `Chromosome` = shiny.huge.collapsedListFilter(input$chromosomes)
-    )
-
-    molten <- melt(filters, variable.name = "filter", measure.vars = colnames(filters))
-
-    return(molten)
-  })
+  return(
+    all(actualCharacterColumnTypes == "character") &&
+      all(actualNumericColumnTypes %in% c("numeric", "integer", "logical"))
+  )
 
 }
 
 shinyServer(function(input, output, session) {
 
   fullCallTable <- reactiveVal()
-  filteredCallTable <- reactiveVal()
 
-  geneTable <- reactiveVal()
+  sidebarFilteringReactives <- callModule(sidebarFiltering, "sidebarFiltering", fullCallTable, input$selectedColumns)
+
+  geneTable <- sidebarFilteringReactives$geneTable
+  filteredCallTable <- sidebarFilteringReactives$filteredCallTable
   comparedGenes <- reactiveVal()
   geneComparisonTable <- reactiveVal()
 
@@ -318,8 +261,6 @@ shinyServer(function(input, output, session) {
     }
 
     req(ct)
-
-    shiny.huge.resetFilters(session, ct)
 
     fullCallTable(ct)
 
@@ -352,13 +293,6 @@ shinyServer(function(input, output, session) {
     progress$close()
   })
 
-  observe({
-
-    maxPopMax <- input$maxAFPopmax
-
-    shiny.huge.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
-
-  })
 
   output$callTable <- DT::renderDataTable({
 
@@ -546,83 +480,5 @@ shinyServer(function(input, output, session) {
     removeModal()
   })
 
-  ### FILTERING
-
-  observeEvent(input$filterReset, {
-
-    req(fullCallTable())
-
-    shiny.huge.resetFilters(session, fullCallTable())
-
-  })
-
-  output$filterDownload <- shiny.huge.handleTableDownload(shiny.huge.filterSettingsReactiveTable(input), "filter-settings-")
-
-  observe({
-
-    req(fullCallTable())
-    req(input$selectedColumns)
-    req(input$sampleNumber)
-    req(input$minReadDepth)
-    req(input$minVariantDepth)
-    req(input$maxAFPopmax)
-    req(input$scaledTPM)
-
-    ct <- fullCallTable()
-
-    variantFrequency <- ct$`Variant depth` / ct$`Read depth`
-
-    ct <- ct[
-      (
-        ("0/1, 1/0" %in% input$genotypes & (Genotype == "0/1" | Genotype == "1/0")) |
-        ("1/1" %in% input$genotypes & Genotype == "1/1") |
-        ("unknown" %in% input$genotypes & (grepl(".", Genotype, fixed = TRUE) | Genotype == "0/0"))
-      ) &
-      `Read depth` >= input$minReadDepth &
-      (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
-      ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
-      (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
-      (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
-      (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
-      (is.null(input$chromosomes) | Chr %in% input$chromosomes),
-      input$selectedColumns, with = FALSE
-    ]
-
-    # Filter for compound heterozygosity only after other variant filters have been applied
-    # Otherwise, there will be variants that are not compound based on the filters
-    sampleSymbolStrings <- paste0(ct$Sample, ct$Symbol)
-    sampleSymbolDuplicates <- duplicated(sampleSymbolStrings) | duplicated(sampleSymbolStrings, fromLast = TRUE)
-
-    ct <- ct[!input$onlyCompoundHeterozygosity | sampleSymbolDuplicates]
-
-    # count mutations per gene per sample by multiple aggregations
-    gt <- ct[, list(samples = .N), by = .(Symbol, Sample)]
-    gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
-    gt <- gt[order(samples, decreasing = TRUE)]
-
-    matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
-    matchingGeneNames <- shiny.huge.geneTable$symbol[matchingGeneIndices]
-
-    gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
-    gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
-    gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
-    gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
-
-    gtexFilteredGenes <- shiny.huge.gtexExpression[
-      tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
-      tissue %in% input$expressions
-    ]
-
-    gt <- gt[
-      input$sampleNumber[1] <= samples &
-      input$sampleNumber[2] >= samples &
-      (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol)
-      ]
-    ct <- ct[Symbol %in% gt$Symbol]
-
-    geneTable(gt)
-    filteredCallTable(ct)
-
-  })
 
 })
