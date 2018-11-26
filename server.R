@@ -7,25 +7,10 @@ shinyServer(function(input, output, session) {
 
   geneTable <- callModule(sidebarFiltering, "sidebarFiltering", fullCallTable, filteredCallTable, callTableReactives$selectedColumns)
 
+  callModule(geneTableTab, "geneTableTab", geneTable, filteredCallTable)
+
   comparedGenes <- reactiveVal()
   geneComparisonTable <- reactiveVal()
-
-  dtInstance <- reactiveVal()
-
-
-  ### GENE TABLE TAB
-
-  output$geneTable <- DT::renderDataTable({
-    req(geneTable())
-
-    return(DT::datatable(geneTable(),
-                         selection = "single",
-                         style = "bootstrap",
-                         class = DT:::DT2BSClass(c("hover", "stripe")))
-    )
-  })
-
-  callModule(tableDownload, "geneDownload", geneTable, "genes-")
 
   ### ANNOTATION TABLE TAB
 
@@ -148,21 +133,6 @@ shinyServer(function(input, output, session) {
     output$reactomeOpeningScript <- renderUI(tags$script(HTML(tabOpeningJavascript)))
 
     progress$close()
-  })
-
-  ### DETAIL MODAL
-
-  observeEvent(input$geneTable_rows_selected,
-               geneExpressionModal(
-                 geneTable()[input$geneTable_rows_selected, Symbol],
-                 filteredCallTable,
-                 input,
-                 output,
-                 "geneTableTab")
-  )
-
-  observeEvent(input$modalOkBtn, {
-    removeModal()
   })
 
 

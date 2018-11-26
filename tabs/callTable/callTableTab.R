@@ -143,6 +143,10 @@ callTable <- function (input, output, session) {
                  "callTableTab")
   )
 
+  observeEvent(input$modalOkBtn, {
+    removeModal()
+  })
+
   return(list(
     filteredCallTable = filteredCallTable,
     fullCallTable = fullCallTable,

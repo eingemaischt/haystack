@@ -73,5 +73,8 @@ source("util/tableDownload.R")
 source("tabs/callTable/callTableTab.R")
 source("tabs/callTable/callTableTabUI.R")
 
+source("tabs/geneTable/geneTableTab.R")
+source("tabs/geneTable/geneTableTabUI.R")
+
 source("sidebarFiltering/sidebarFiltering.R")
 source("sidebarFiltering/sidebarFilteringUI.R")

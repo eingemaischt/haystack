@@ -23,25 +23,7 @@ shinyUI(
           callTableTabUI("callTableTab")
         ),
         tabItem(tabName = "geneTab",
-          fluidRow(
-            box(
-              style = "overflow-x: scroll",
-              title = "Gene Table",
-              width = 12,
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              DT::dataTableOutput("geneTable")
-            )
-          ),
-          fluidRow(
-            box(
-              width = 6,
-              solidHeader = TRUE,
-              title = "Download",
-              tableDownloadUI("geneDownload", "genes"),
-              footer = "This download contains the filtered genes only. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."
-            )
-          )
+          geneTableTabUI("geneTableTab")
         ),
         tabItem(tabName = "annotationTab",
           fluidRow(
