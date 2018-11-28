@@ -1,9 +1,9 @@
 tabs.annotations.module <- function (input, output, session) {
 
-  callModule(tableDownload, "annotationDownload", function () annotation.geneTable, "annotation-")
-  callModule(tableDownload, "gtexDownload", function () annotation.gtexExpression, "gtex-expression-")
-  callModule(tableDownload, "hpaRnaDownload", function () annotation.hpaRnaExpression, "hpa-rna-")
-  callModule(tableDownload, "hpaProteinDownload", function () annotation.hpaProteinExpession, "hpa-protein-")
+  callModule(util.tableDownload.module, "annotationDownload", function () annotation.geneTable, "annotation-")
+  callModule(util.tableDownload.module, "gtexDownload", function () annotation.gtexExpression, "gtex-expression-")
+  callModule(util.tableDownload.module, "hpaRnaDownload", function () annotation.hpaRnaExpression, "hpa-rna-")
+  callModule(util.tableDownload.module, "hpaProteinDownload", function () annotation.hpaProteinExpession, "hpa-protein-")
 
   ### ANNOTATION TABLE TAB
 

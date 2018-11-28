@@ -1,6 +1,6 @@
 tabs.geneTable.module <- function (input, output, session, geneTable, filteredCallTable, expressionFilter) {
 
-  callModule(tableDownload, "geneDownload", geneTable, "genes-")
+  callModule(util.tableDownload.module, "geneDownload", geneTable, "genes-")
 
   output$geneTable <- DT::renderDataTable({
     req(geneTable())

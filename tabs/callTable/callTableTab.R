@@ -64,7 +64,7 @@ tabs.callTable.module <- function (input, output, session) {
   filteredCallTable <- reactiveVal()
   expressionFilter <- reactiveVal()
 
-  callModule(tableDownload, "filteredCallDownload", filteredCallTable, "filtered-calls-")
+  callModule(util.tableDownload.module, "filteredCallDownload", filteredCallTable, "filtered-calls-")
 
   observeEvent(input$callFile, {
 

@@ -74,7 +74,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
   geneTable <- reactiveVal()
 
-  callModule(tableDownload, "filterDownload", sidebar.filterSettingsReactiveTable(input), "filter-settings-")
+  callModule(util.tableDownload.module, "filterDownload", sidebar.filterSettingsReactiveTable(input), "filter-settings-")
 
   observeEvent(input$filterReset, {
 

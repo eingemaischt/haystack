@@ -1,6 +1,6 @@
 shinyServer(function(input, output, session) {
 
-  callTableReactives <- callModule(callTable, "callTableTab")
+  callTableReactives <- callModule(tabs.callTable.module, "callTableTab")
 
   fullCallTable <- callTableReactives$fullCallTable
   filteredCallTable <- callTableReactives$filteredCallTable
