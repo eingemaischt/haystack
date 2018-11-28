@@ -21,11 +21,11 @@ tabs.annotations.moduleUI <- function (id) {
         title = "Download",
         util.tableDownload.moduleUI(ns("annotationDownload"), "gene annotations"),
         hr(),
-        util.tableDownload.moduleUI(ns("gtexDownload"), "GTEx table"),
+        util.tableDownload.moduleUI(ns("gtexDownload"), "GTEx table", showXslx = FALSE),
         hr(),
-        util.tableDownload.moduleUI(ns("hpaRnaDownload"), "HPA RNA table"),
+        util.tableDownload.moduleUI(ns("hpaRnaDownload"), "HPA RNA table", showXslx = FALSE),
         hr(),
-        util.tableDownload.moduleUI(ns("hpaProteinDownload"), "HPA protein table")
+        util.tableDownload.moduleUI(ns("hpaProteinDownload"), "HPA protein table", showXslx = FALSE)
       )
     )
   )
