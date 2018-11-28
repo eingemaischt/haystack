@@ -5,11 +5,15 @@ sidebar.resetFilters <- function (session, callTable) {
 
   studies <- unique(callTable$Studie)
 
+  minTpmRank <- min(annotation.gtexExpression$tpm_rank)
+  maxTpmRank <- max(annotation.gtexExpression$tpm_rank)
+
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0)
   updateSliderInput(session, "minVariantDepth", value = 0)
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
+  updateSliderInput(session, "tpmRank", value = c(minTpmRank, maxTpmRank))
   updateSelectInput(session, "proteinLevel", selected = "Any")
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
@@ -58,6 +62,7 @@ sidebar.filterSettingsReactiveTable <- function (input) {
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
       `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
       `Scaled GTEx TPM value` = sidebar.intervalFilterString(input$scaledTPM),
+      `GTEx TPM rank` = sidebar.intervalFilterString(input$tpmRank),
       `Consequence` = sidebar.collapsedListFilter(input$consequences),
       `Study` = sidebar.collapsedListFilter(input$studies),
       `Chromosome` = sidebar.collapsedListFilter(input$chromosomes)
@@ -115,6 +120,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     req(input$minVariantDepth)
     req(input$maxAFPopmax)
     req(input$scaledTPM)
+    req(input$tpmRank)
 
     ct <- fullCallTable()
 
@@ -158,14 +164,15 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
     gtexFilteredGenes <- annotation.gtexExpression[
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
+      tpm_rank >= input$tpmRank[1] & tpm_rank <= input$tpmRank[2] &
         tissue %in% input$expressions
-      ]
+    ]
 
     gt <- gt[
       input$sampleNumber[1] <= samples &
         input$sampleNumber[2] >= samples &
         (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol)
-      ]
+    ]
     ct <- ct[Symbol %in% gt$Symbol]
 
     geneTable(gt)

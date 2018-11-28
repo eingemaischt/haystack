@@ -52,6 +52,38 @@ annotation.symbolToIndexMap <- (function () {
   return(symbolMap)
 })()
 
+annotation.computeMetaValues <- function (rawGtexData, tpmRowFn) {
+
+  tpmValues <- rawGtexData[,-(1:2)]
+
+  transformedTpmValues <- rawGtexData
+  transformedTpmValues[, 3:ncol(transformedTpmValues)] <- data.table(t(apply(tpmValues, 1, tpmRowFn)))
+
+  return(transformedTpmValues)
+}
+
+annotation.computeScaledTpmValues <- function (rawGtexData) {
+
+  scaledTpmValues <- annotation.computeMetaValues(rawGtexData, function (tpmRow) {
+
+    maxValue <- max(tpmRow)
+
+    if (maxValue == 0) return(rep(0, length(tpmRow)))
+
+    return(tpmRow / maxValue)
+
+  })
+
+  return(scaledTpmValues)
+}
+
+annotation.computeTpmRanks <- function (rawGtexData) {
+
+  scaledRankValues <- annotation.computeMetaValues(rawGtexData, rank)
+
+  return(scaledRankValues)
+}
+
 annotation.gtexExpression <- (function () {
 
   if (exists("annotation.gtexExpression")) return(annotation.gtexExpression)
@@ -59,22 +91,15 @@ annotation.gtexExpression <- (function () {
   gtexFile <- "GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct"
 
   rawGtexData <- fread(cmd = paste0("zcat annotation/", gtexFile))
-
-  scaledGtexData <- rawGtexData
-  scaledGtexData[, 3:ncol(scaledGtexData)] <- data.table(t(apply(scaledGtexData[,-(1:2)], 1, function (x) {
-
-    maxValue <- max(x)
-
-    if (maxValue == 0) return(rep(0, length(x)))
-
-    return(x / maxValue)
-
-  })))
+  scaledGtexData <- annotation.computeScaledTpmValues(rawGtexData)
+  tpmRankData <- annotation.computeTpmRanks(rawGtexData)
 
   rawGtexData <- melt(rawGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm")
   scaledGtexData <- melt(scaledGtexData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_scaled")
+  tpmRankData <- melt(tpmRankData, id.vars = c("gene_id", "Description"), variable.name = "tissue", value.name = "tpm_rank")
 
   combined <- merge(rawGtexData, scaledGtexData)
+  combined <- merge(combined, tpmRankData)
 
   combined$symbol <- annotation.geneTable$symbol[annotation.symbolToIndexMap[[combined$Description]]]
   combined$tissue <- tolower(combined$tissue)

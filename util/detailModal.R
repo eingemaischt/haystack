@@ -62,7 +62,8 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
-        tabPanel("GTex (TPM scaled)", plotOutput(ns("modalGTExScaledExpression"), height = "640px")),
+        tabPanel("GTEx (TPM scaled)", plotOutput(ns("modalGTExScaledExpression"), height = "640px")),
+        tabPanel("GTEx (TPM ranked)", plotOutput(ns("modalGTExRankedExpression"), height = "640px")),
         tabPanel("HPA RNA (TPM scaled)", plotOutput(ns("modalHpaRnaScaledExpression"), height = "640px")),
         tabPanel("HPA Protein", plotOutput(ns("modalHpaProteinExpression"), height = "640px")),
         tabPanel("Mutation types", tags$div(
@@ -91,11 +92,14 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
 
     scaledGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_scaled)]
 
+    rankedGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_rank)]
+
     scaledHpaRnaValues <- matchingHpaRnaExpression[,list(tissue = tissue, value = tpm_scaled)]
 
     hpaProteinValues <- matchingHpaProteinExpression[,list(value = max(level)),by = tissue]
 
     output$modalGTExScaledExpression <- util.detailModal.modalExpressionPlot(scaledGtexValues, expressionFilter, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    output$modalGTExRankedExpression <- util.detailModal.modalExpressionPlot(rankedGtexValues, expressionFilter, paste(selectedSymbol, "GTEx data (TPM ranks)", sep = ": "))
     output$modalHpaRnaScaledExpression <- util.detailModal.modalExpressionPlot(scaledHpaRnaValues, expressionFilter, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
     output$modalHpaProteinExpression <- util.detailModal.modalExpressionPlot(hpaProteinValues, expressionFilter, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
