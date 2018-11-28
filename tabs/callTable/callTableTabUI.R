@@ -1,4 +1,4 @@
-callTableTabUI <- function (id) {
+tabs.callTable.moduleUI <- function (id) {
 
   ns <- NS(id)
 
@@ -34,7 +34,7 @@ callTableTabUI <- function (id) {
         style = "height: 100%",
         p("You can download the filtered variant call table here. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."),
         hr(),
-        tableDownloadUI(ns("filteredCallDownload"), "filtered calls")
+        util.tableDownload.moduleUI(ns("filteredCallDownload"), "filtered calls")
       )
     ),
     fluidRow(

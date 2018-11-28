@@ -1,4 +1,4 @@
-geneComparisonTab <- function (input, output, session, fullCallTable, geneTable) {
+tabs.geneComparison.module <- function (input, output, session, fullCallTable, geneTable) {
 
   comparedGenes <- reactiveVal()
   geneComparisonTable <- reactiveVal()
@@ -26,8 +26,8 @@ geneComparisonTab <- function (input, output, session, fullCallTable, geneTable)
 
     theirSymbols <- comparedGenes()
 
-    ourIndices <- shiny.huge.symbolToIndexMap[[ourSymbols]]
-    theirIndices <- shiny.huge.symbolToIndexMap[[theirSymbols]]
+    ourIndices <- annotation.symbolToIndexMap[[ourSymbols]]
+    theirIndices <- annotation.symbolToIndexMap[[theirSymbols]]
 
     ourIndexTable <- data.table(symbol = ourSymbols, index = ourIndices)
     theirIndexTable <- data.table(symbol = theirSymbols, index = theirIndices)
@@ -51,15 +51,15 @@ geneComparisonTab <- function (input, output, session, fullCallTable, geneTable)
     output$intersectingSymbols <- renderText(intersectingSymbolsText)
     output$theirSymbols <- renderText(onlyTheirSymbolsText)
 
-    output$ourSymbolsToClipboard <- copyToClipboardButton(onlyOurSymbolsText, "ourbtn")
-    output$intersectingSymbolsToClipboard <- copyToClipboardButton(intersectingSymbolsText, "intersectingbtn")
-    output$theirSymbolsToClipboard <- copyToClipboardButton(onlyTheirSymbolsText, "theirbtn")
+    output$ourSymbolsToClipboard <-util.copyToClipboardButton(onlyOurSymbolsText, "ourbtn")
+    output$intersectingSymbolsToClipboard <-util.copyToClipboardButton(intersectingSymbolsText, "intersectingbtn")
+    output$theirSymbolsToClipboard <-util.copyToClipboardButton(onlyTheirSymbolsText, "theirbtn")
 
     output$geneComparisonVenn <- renderPlot({
 
       vennInput <- list(
-        our_symbols = c(shiny.huge.geneTable$symbol[ourNonNAIndices], ourIndexTable[is.na(index), symbol]),
-        their_symbols = c(shiny.huge.geneTable$symbol[theirNonNAIndices], theirIndexTable[is.na(index), symbol])
+        our_symbols = c(annotation.geneTable$symbol[ourNonNAIndices], ourIndexTable[is.na(index), symbol]),
+        their_symbols = c(annotation.geneTable$symbol[theirNonNAIndices], theirIndexTable[is.na(index), symbol])
       )
 
       venn <- venn.diagram(

@@ -1,4 +1,4 @@
-detailDivElement <- function (label, value) {
+util.detailModal.detailDivElement <- function (label, value) {
 
   return(tags$div(
     tags$b(label),
@@ -7,7 +7,7 @@ detailDivElement <- function (label, value) {
 
 }
 
-modalExpressionPlot <- function (expressions, expressionFilter, title) {
+util.detailModal.modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
   ### WORKAROUND
   ### when no expressions are found, just render some dummy plot so no errors are thrown
@@ -40,7 +40,7 @@ modalExpressionPlot <- function (expressions, expressionFilter, title) {
 
 }
 
-geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, expressionFilter, output, id) {
+util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveVal, expressionFilter, output, id) {
 
   ns <- NS(id)
 
@@ -48,17 +48,17 @@ geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, expressio
 
     req(callTableReactiveVal())
 
-    matchingGene <- shiny.huge.geneTable[shiny.huge.symbolToIndexMap[[selectedSymbol]]]
+    matchingGene <- annotation.geneTable[annotation.symbolToIndexMap[[selectedSymbol]]]
 
     showModal(modalDialog(
-      detailDivElement("Location:", matchingGene$location),
-      detailDivElement("Gene (found in table):", selectedSymbol),
-      detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
-      detailDivElement("Gene full name:", matchingGene$name),
-      detailDivElement("Gene family:", matchingGene$gene_family),
-      detailDivElement("Gene description:", matchingGene$description),
-      detailDivElement("Location type:", matchingGene$locus_type),
-      detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
+      util.detailModal.detailDivElement("Location:", matchingGene$location),
+      util.detailModal.detailDivElement("Gene (found in table):", selectedSymbol),
+      util.detailModal.detailDivElement("Gene (current HGNC symbol):", matchingGene$symbol),
+      util.detailModal.detailDivElement("Gene full name:", matchingGene$name),
+      util.detailModal.detailDivElement("Gene family:", matchingGene$gene_family),
+      util.detailModal.detailDivElement("Gene description:", matchingGene$description),
+      util.detailModal.detailDivElement("Location type:", matchingGene$locus_type),
+      util.detailModal.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
@@ -85,9 +85,9 @@ geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, expressio
                                    by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
                                    ]
 
-    matchingGtexExpression <- shiny.huge.gtexExpression[symbol == matchingGene$symbol]
-    matchingHpaRnaExpression <- shiny.huge.hpaRnaExpression[symbol == matchingGene$symbol]
-    matchingHpaProteinExpression <- shiny.huge.hpaProteinExpession[symbol == matchingGene$symbol]
+    matchingGtexExpression <- annotation.gtexExpression[symbol == matchingGene$symbol]
+    matchingHpaRnaExpression <- annotation.hpaRnaExpression[symbol == matchingGene$symbol]
+    matchingHpaProteinExpression <- annotation.hpaProteinExpession[symbol == matchingGene$symbol]
 
     scaledGtexValues <- matchingGtexExpression[,list(tissue = tissue, value = tpm_scaled)]
 
@@ -95,9 +95,9 @@ geneExpressionModal <- function (selectedSymbol, callTableReactiveVal, expressio
 
     hpaProteinValues <- matchingHpaProteinExpression[,list(value = max(level)),by = tissue]
 
-    output$modalGTExScaledExpression <- modalExpressionPlot(scaledGtexValues, expressionFilter, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
-    output$modalHpaRnaScaledExpression <- modalExpressionPlot(scaledHpaRnaValues, expressionFilter, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
-    output$modalHpaProteinExpression <- modalExpressionPlot(hpaProteinValues, expressionFilter, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
+    output$modalGTExScaledExpression <- util.detailModal.modalExpressionPlot(scaledGtexValues, expressionFilter, paste(selectedSymbol, "GTEx data (scaled TPM)", sep = ": "))
+    output$modalHpaRnaScaledExpression <- util.detailModal.modalExpressionPlot(scaledHpaRnaValues, expressionFilter, paste(selectedSymbol, "HPA RNA data (scaled TPM)", sep = ":"))
+    output$modalHpaProteinExpression <- util.detailModal.modalExpressionPlot(hpaProteinValues, expressionFilter, paste(selectedSymbol, "HPA Protein data (levels)", sep = ":"))
     output$modalMutationTypes <- renderTable(uniqueMutations, spacing = "xs")
 
   })

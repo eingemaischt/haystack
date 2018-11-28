@@ -1,4 +1,4 @@
-tableDownloadUI <- function (id, title) {
+util.tableDownload.moduleUI <- function (id, title) {
 
   ns <- NS(id)
 

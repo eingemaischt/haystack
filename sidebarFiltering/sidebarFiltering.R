@@ -1,4 +1,4 @@
-resetFilters <- function (session, callTable) {
+sidebar.resetFilters <- function (session, callTable) {
 
   numberOfSamples <- length(unique(callTable$Sample))
   consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
@@ -14,14 +14,14 @@ resetFilters <- function (session, callTable) {
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
   updateNumericInput(session, "maxAFPopmax", value = 100)
-  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(shiny.huge.gtexExpression$tissue))
+  updateSelectizeInput(session, "expressions", selected = NULL, choices = unique(annotation.gtexExpression$tissue))
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
   updateSelectizeInput(session, "chromosomes", selected = NULL, choices = unique(callTable$Chr))
 
 }
 
-handleErrorNotification <- function (value, filterName, notificationId) {
+sidebar.handleErrorNotification <- function (value, filterName, notificationId) {
 
   if (is.na(value)) {
     showNotification(paste0("Invalid number in ", filterName, " filter"), closeButton = FALSE, type = "error", duration = NULL, id = notificationId)
@@ -32,35 +32,35 @@ handleErrorNotification <- function (value, filterName, notificationId) {
 }
 
 
-intervalFilterString <- function(rangeInput) {
+sidebar.intervalFilterString <- function(rangeInput) {
 
   return(paste0("[", rangeInput[1], ",", rangeInput[2], "]"))
 
 }
 
-collapsedListFilter <- function (listFilter) {
+sidebar.collapsedListFilter <- function (listFilter) {
 
   return(paste0(listFilter, collapse = ","))
 
 }
 
-filterSettingsReactiveTable <- function (input) {
+sidebar.filterSettingsReactiveTable <- function (input) {
 
   return(function () {
 
     filters <- data.table(
-      `Number of samples affected` = intervalFilterString(input$sampleNumber),
+      `Number of samples affected` = sidebar.intervalFilterString(input$sampleNumber),
       `Minimum read depth` = input$minReadDepth,
       `Minimum variant depth` = input$minVariantDepth,
-      `Frequency (variant depth / read depth)` = intervalFilterString(input$readVariantFrequency),
+      `Frequency (variant depth / read depth)` = sidebar.intervalFilterString(input$readVariantFrequency),
       `Maximum AF Popmax` = input$maxAFPopmax,
-      `Genotype` = collapsedListFilter(input$genotypes),
+      `Genotype` = sidebar.collapsedListFilter(input$genotypes),
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
-      `GTEx tissue expression` = collapsedListFilter(input$expressions),
-      `Scaled GTEx TPM value` = intervalFilterString(input$scaledTPM),
-      `Consequence` = collapsedListFilter(input$consequences),
-      `Study` = collapsedListFilter(input$studies),
-      `Chromosome` = collapsedListFilter(input$chromosomes)
+      `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
+      `Scaled GTEx TPM value` = sidebar.intervalFilterString(input$scaledTPM),
+      `Consequence` = sidebar.collapsedListFilter(input$consequences),
+      `Study` = sidebar.collapsedListFilter(input$studies),
+      `Chromosome` = sidebar.collapsedListFilter(input$chromosomes)
     )
 
     molten <- melt(filters, variable.name = "filter", measure.vars = colnames(filters))
@@ -70,17 +70,17 @@ filterSettingsReactiveTable <- function (input) {
 
 }
 
-sidebarFiltering <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter) {
+sidebar.module <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter) {
 
   geneTable <- reactiveVal()
 
-  callModule(tableDownload, "filterDownload", filterSettingsReactiveTable(input), "filter-settings-")
+  callModule(tableDownload, "filterDownload", sidebar.filterSettingsReactiveTable(input), "filter-settings-")
 
   observeEvent(input$filterReset, {
 
     req(fullCallTable())
 
-    resetFilters(session, fullCallTable())
+    sidebar.resetFilters(session, fullCallTable())
 
   })
 
@@ -88,7 +88,7 @@ sidebarFiltering <- function (input, output, session, fullCallTable, filteredCal
 
     maxPopMax <- input$maxAFPopmax
 
-    handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
+    sidebar.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
 
   })
 
@@ -102,7 +102,7 @@ sidebarFiltering <- function (input, output, session, fullCallTable, filteredCal
 
     req(fullCallTable())
 
-    resetFilters(session, fullCallTable())
+    sidebar.resetFilters(session, fullCallTable())
 
   })
 
@@ -148,15 +148,15 @@ sidebarFiltering <- function (input, output, session, fullCallTable, filteredCal
     gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
     gt <- gt[order(samples, decreasing = TRUE)]
 
-    matchingGeneIndices <- shiny.huge.symbolToIndexMap[[gt$Symbol]]
-    matchingGeneNames <- shiny.huge.geneTable$symbol[matchingGeneIndices]
+    matchingGeneIndices <- annotation.symbolToIndexMap[[gt$Symbol]]
+    matchingGeneNames <- annotation.geneTable$symbol[matchingGeneIndices]
 
-    gt$name <- shiny.huge.geneTable$name[matchingGeneIndices]
-    gt$locus_type <- shiny.huge.geneTable$locus_type[matchingGeneIndices]
-    gt$family <- shiny.huge.geneTable$gene_family[matchingGeneIndices]
-    gt$description <- shiny.huge.geneTable$description[matchingGeneIndices]
+    gt$name <- annotation.geneTable$name[matchingGeneIndices]
+    gt$locus_type <- annotation.geneTable$locus_type[matchingGeneIndices]
+    gt$family <- annotation.geneTable$gene_family[matchingGeneIndices]
+    gt$description <- annotation.geneTable$description[matchingGeneIndices]
 
-    gtexFilteredGenes <- shiny.huge.gtexExpression[
+    gtexFilteredGenes <- annotation.gtexExpression[
       tpm_scaled >= input$scaledTPM[1] & tpm_scaled <= input$scaledTPM[2] &
         tissue %in% input$expressions
       ]

@@ -6,7 +6,7 @@ shinyServer(function(input, output, session) {
   filteredCallTable <- callTableReactives$filteredCallTable
 
   geneTable <- callModule(
-    sidebarFiltering,
+    sidebar.module,
     "sidebarFiltering",
     fullCallTable,
     filteredCallTable,
@@ -14,9 +14,9 @@ shinyServer(function(input, output, session) {
     callTableReactives$expressionFilter
   )
 
-  callModule(geneTableTab, "geneTableTab", geneTable, filteredCallTable, callTableReactives$expressionFilter)
-  callModule(geneComparisonTab, "geneComparisonTab", fullCallTable, geneTable)
-  callModule(annotationsTab, "annotationsTab")
-  callModule(pathwaysTab, "pathwaysTab", geneTable)
+  callModule(tabs.geneTable.module, "geneTableTab", geneTable, filteredCallTable, callTableReactives$expressionFilter)
+  callModule(tabs.geneComparison.module, "geneComparisonTab", fullCallTable, geneTable)
+  callModule(tabs.annotations.module, "annotationsTab")
+  callModule(tabs.pathways.module, "pathwaysTab", geneTable)
 
 })

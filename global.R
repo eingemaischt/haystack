@@ -59,7 +59,7 @@ futile.logger::flog.threshold(futile.logger::ERROR, name = "VennDiagramLogger")
 # make sure submissions always fit into the server
 options(shiny.maxRequestSize=100*1024^2)
 
-source("annotation.R")
+source("annotation/annotation.R")
 
 source("util/errorModal.R")
 
@@ -67,8 +67,8 @@ source("util/copyToClipboardButton.R")
 
 source("util/detailModal.R")
 
-source("util/tableDownloadUI.R")
 source("util/tableDownload.R")
+source("util/tableDownloadUI.R")
 
 source("tabs/callTable/callTableTab.R")
 source("tabs/callTable/callTableTabUI.R")

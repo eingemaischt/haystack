@@ -1,18 +1,18 @@
-annotationsTab <- function (input, output, session) {
+tabs.annotations.module <- function (input, output, session) {
 
-  callModule(tableDownload, "annotationDownload", function () shiny.huge.geneTable, "annotation-")
-  callModule(tableDownload, "gtexDownload", function () shiny.huge.gtexExpression, "gtex-expression-")
-  callModule(tableDownload, "hpaRnaDownload", function () shiny.huge.hpaRnaExpression, "hpa-rna-")
-  callModule(tableDownload, "hpaProteinDownload", function () shiny.huge.hpaProteinExpession, "hpa-protein-")
+  callModule(tableDownload, "annotationDownload", function () annotation.geneTable, "annotation-")
+  callModule(tableDownload, "gtexDownload", function () annotation.gtexExpression, "gtex-expression-")
+  callModule(tableDownload, "hpaRnaDownload", function () annotation.hpaRnaExpression, "hpa-rna-")
+  callModule(tableDownload, "hpaProteinDownload", function () annotation.hpaProteinExpession, "hpa-protein-")
 
   ### ANNOTATION TABLE TAB
 
-  output$annotationTable <- DT::renderDataTable(DT::datatable(shiny.huge.geneTable,
+  output$annotationTable <- DT::renderDataTable(DT::datatable(annotation.geneTable,
                                                               selection = "single",
                                                               style = "bootstrap",
                                                               class = DT:::DT2BSClass(c("compact", "hover", "stripe")),
                                                               options = list(columnDefs = list(list(
-                                                                targets = seq_len(ncol(shiny.huge.geneTable)),
+                                                                targets = seq_len(ncol(annotation.geneTable)),
                                                                 render = DT::JS(
                                                                   "function(data, type, row, meta) {",
                                                                   "if (data == null) return '';",

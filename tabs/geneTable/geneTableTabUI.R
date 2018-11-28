@@ -1,4 +1,4 @@
-geneTableTabUI <- function (id) {
+tabs.geneTable.moduleUI <- function (id) {
 
   ns <- NS(id)
 
@@ -18,7 +18,7 @@ geneTableTabUI <- function (id) {
         width = 6,
         solidHeader = TRUE,
         title = "Download",
-        tableDownloadUI(ns("geneDownload"), "genes"),
+        util.tableDownload.moduleUI(ns("geneDownload"), "genes"),
         footer = "This download contains the filtered genes only. Please note that only the sidebar filters apply to this file, not the sorting orders or search bar."
       )
     )

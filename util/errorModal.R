@@ -1,4 +1,4 @@
-showErrorModal <- function (errorMessage, session) {
+util.showErrorModal <- function (errorMessage, session) {
 
   showModal(modalDialog(
     tags$div(errorMessage),

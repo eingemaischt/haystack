@@ -1,4 +1,4 @@
-sidebarFilteringUI <- function (id) {
+sidebar.moduleUI <- function (id) {
 
   ns <- NS(id)
 
@@ -15,12 +15,12 @@ sidebarFilteringUI <- function (id) {
     ), selected = c("unknown", "0/1, 1/0", "1/1")),
     checkboxInput(ns("onlyCompoundHeterozygosity"), label = "Show only compound heterozygosity candidates", value = FALSE),
     selectizeInput(ns("expressions"), label = "GTEx tissue expression", multiple = TRUE, choices = unique(
-      shiny.huge.gtexExpression$tissue)),
+      annotation.gtexExpression$tissue)),
     sliderInput(ns("scaledTPM"), label = "Scaled GTEx TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
     selectizeInput(ns("consequences"), label = "Consequence", multiple = TRUE, choices = "NA"),
     selectizeInput(ns("studies"), label = "Study", multiple = TRUE, choices = "NA"),
     selectizeInput(ns("chromosomes"), label = "Chromosome", multiple = TRUE, choices = "NA"),
     actionButton(ns("filterReset"), label = "Reset filters", icon = icon("repeat")),
-    tableDownloadUI(ns("filterDownload"), "filters")
+    util.tableDownload.moduleUI(ns("filterDownload"), "filters")
   )
 }

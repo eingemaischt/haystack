@@ -1,4 +1,4 @@
-geneComparisonTabUI <- function (id) {
+tabs.geneComparison.moduleUI <- function (id) {
 
   ns <- NS(id)
 

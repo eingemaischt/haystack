@@ -1,4 +1,4 @@
-annotationsTabUI <- function (id) {
+tabs.annotations.moduleUI <- function (id) {
 
   ns <- NS(id)
 
@@ -19,13 +19,13 @@ annotationsTabUI <- function (id) {
         solidHeader = TRUE,
         footer = "Please note that downloads always contain the whole tables. Filters and sorting orders do not apply.",
         title = "Download",
-        tableDownloadUI(ns("annotationDownload"), "gene annotations"),
+        util.tableDownload.moduleUI(ns("annotationDownload"), "gene annotations"),
         hr(),
-        tableDownloadUI(ns("gtexDownload"), "GTEx table"),
+        util.tableDownload.moduleUI(ns("gtexDownload"), "GTEx table"),
         hr(),
-        tableDownloadUI(ns("hpaRnaDownload"), "HPA RNA table"),
+        util.tableDownload.moduleUI(ns("hpaRnaDownload"), "HPA RNA table"),
         hr(),
-        tableDownloadUI(ns("hpaProteinDownload"), "HPA protein table")
+        util.tableDownload.moduleUI(ns("hpaProteinDownload"), "HPA protein table")
       )
     )
   )

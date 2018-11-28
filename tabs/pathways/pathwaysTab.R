@@ -1,4 +1,4 @@
-pathwaysTab <- function (input, output, session, geneTable) {
+tabs.pathways.module <- function (input, output, session, geneTable) {
 
   ### REACTOME TAB
 
@@ -6,9 +6,9 @@ pathwaysTab <- function (input, output, session, geneTable) {
 
     req(geneTable())
 
-    hgncSymbolIndices <- shiny.huge.symbolToIndexMap[[geneTable()$Symbol]]
+    hgncSymbolIndices <- annotation.symbolToIndexMap[[geneTable()$Symbol]]
 
-    hgncGenes <- unique(shiny.huge.geneTable$symbol[hgncSymbolIndices[!is.na(hgncSymbolIndices)]])
+    hgncGenes <- unique(annotation.geneTable$symbol[hgncSymbolIndices[!is.na(hgncSymbolIndices)]])
 
     progress <- shiny::Progress$new()
     progress$set(message = paste("Opening reactome pathway overrepresenation link using", length(hgncGenes), "genes"), value = .5)

@@ -1,4 +1,4 @@
-isValidTable <- function (dt) {
+tabs.callTable.isValidTable <- function (dt) {
 
   characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
   numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
@@ -16,7 +16,7 @@ isValidTable <- function (dt) {
 
 }
 
-readCallTable <- function (fileName) {
+tabs.callTable.readCallTable <- function (fileName) {
 
   lowercaseFileName <- tolower(fileName)
 
@@ -50,7 +50,7 @@ readCallTable <- function (fileName) {
     ct$Chr <- as.character(ct$Chr)
   }
 
-  if (isValidTable(ct)) {
+  if (tabs.callTable.isValidTable(ct)) {
     return(ct)
   } else {
     return(NULL)
@@ -58,7 +58,7 @@ readCallTable <- function (fileName) {
 
 }
 
-callTable <- function (input, output, session) {
+tabs.callTable.module <- function (input, output, session) {
 
   fullCallTable <- reactiveVal()
   filteredCallTable <- reactiveVal()
@@ -73,10 +73,10 @@ callTable <- function (input, output, session) {
     progress <- shiny::Progress$new()
     progress$set(message = "Uploading table", value = .5)
 
-    ct <- readCallTable(input$callFile$datapath)
+    ct <- tabs.callTable.readCallTable(input$callFile$datapath)
 
     if(is.null(ct)) {
-      showErrorModal("Could not correctly read table. Make sure there are no trailing rows, all relevant columns are present and dots are used as decimal seperators.")
+      util.showErrorModal("Could not correctly read table. Make sure there are no trailing rows, all relevant columns are present and dots are used as decimal seperators.")
       progress$close()
     }
 
@@ -86,11 +86,11 @@ callTable <- function (input, output, session) {
 
     updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
 
-    recognizedSymbolIndices <- shiny.huge.symbolToIndexMap[[ct$Symbol]]
+    recognizedSymbolIndices <- annotation.symbolToIndexMap[[ct$Symbol]]
     symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
-    recognizedSymbols <- unique(shiny.huge.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
+    recognizedSymbols <- unique(annotation.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 
-    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% shiny.huge.gtexExpression$symbol]
+    unexpressedSymbols <- recognizedSymbols[!recognizedSymbols %in% annotation.gtexExpression$symbol]
     unrecognizedSymbols <- unique(ct$Symbol[!symbolsAreRecognized])
 
     unrecognizedSymbolsText <- paste0(unrecognizedSymbols, collapse = "\n")
@@ -109,8 +109,8 @@ callTable <- function (input, output, session) {
     output$totalUnrecognizedSymbols <- renderText(paste0(unrecognizedInTotal, " (", fractionUnrecognized, "%)"))
     output$totalUnexpressedSymbols <- renderText(paste0(unexpressedInTotal, " (", fractionUnexpressed, "%)"))
 
-    output$unrecognizedToClipboard <- copyToClipboardButton(unrecognizedSymbolsText, "unrecognizedbtn")
-    output$unexpressedToClipboard <- copyToClipboardButton(unexpressedSymbolsText, "unexpressedbtn")
+    output$unrecognizedToClipboard <-util.copyToClipboardButton(unrecognizedSymbolsText, "unrecognizedbtn")
+    output$unexpressedToClipboard <-util.copyToClipboardButton(unexpressedSymbolsText, "unexpressedbtn")
 
     progress$close()
   })
@@ -136,7 +136,7 @@ callTable <- function (input, output, session) {
   })
 
   observeEvent(input$callTable_rows_selected,
-                geneExpressionModal(
+                util.detailModal.showDetailModal(
                  filteredCallTable()[input$callTable_rows_selected]$Symbol,
                  filteredCallTable,
                  expressionFilter(),

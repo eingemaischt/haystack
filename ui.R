@@ -10,7 +10,7 @@ shinyUI(
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
 
-        sidebarFilteringUI("sidebarFiltering")
+        sidebar.moduleUI("sidebarFiltering")
       )
     ),
     dashboardBody(
@@ -20,19 +20,19 @@ shinyUI(
       ),
       tabItems(
         tabItem(tabName = "callTableTab",
-          callTableTabUI("callTableTab")
+          tabs.callTable.moduleUI("callTableTab")
         ),
         tabItem(tabName = "geneTab",
-          geneTableTabUI("geneTableTab")
+          tabs.geneTable.moduleUI("geneTableTab")
         ),
         tabItem(tabName = "annotationTab",
-          annotationsTabUI("annotationsTab")
+          tabs.annotations.moduleUI("annotationsTab")
         ),
         tabItem(tabName = "geneComparisonTab",
-          geneComparisonTabUI("geneComparisonTab")
+          tabs.geneComparison.moduleUI("geneComparisonTab")
         ),
         tabItem(tabName = "pathwayTab",
-          pathwaysTabUI("pathwaysTab")
+          tabs.pathways.moduleUI("pathwaysTab")
         )
       )
     )

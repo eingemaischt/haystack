@@ -1,4 +1,4 @@
-pathwaysTabUI <- function (id) {
+tabs.pathways.moduleUI <- function (id) {
 
   ns <- NS(id)
 

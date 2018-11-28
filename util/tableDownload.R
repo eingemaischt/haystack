@@ -1,16 +1,16 @@
-csvWriteHandler <- function (dataTable, fileName) {
+util.tableDownload.csvWriteHandler <- function (dataTable, fileName) {
 
   fwrite(dataTable, fileName)
 
 }
 
-xlsxWriteHandler <- function (dataTable, fileName) {
+util.tableDownload.xlsxWriteHandler <- function (dataTable, fileName) {
 
   write.xlsx(dataTable, fileName, asTable = TRUE)
 
 }
 
-handleTableDownload <- function (tableReactiveValue, filePrefix, fileExtension, writeHandler) {
+util.tableDownload.handleTableDownload <- function (tableReactiveValue, filePrefix, fileExtension, writeHandler) {
 
   return(downloadHandler(
     filename = function() {
@@ -34,9 +34,9 @@ handleTableDownload <- function (tableReactiveValue, filePrefix, fileExtension, 
 
 }
 
-tableDownload <- function (input, output, session, tableReactiveValue, filePrefix) {
+util.tableDownload.module <- function (input, output, session, tableReactiveValue, filePrefix) {
 
-  output$csvDownload <- handleTableDownload(tableReactiveValue, filePrefix, ".csv", csvWriteHandler)
-  output$xlsxDownload <- handleTableDownload(tableReactiveValue, filePrefix, ".xlsx", xlsxWriteHandler)
+  output$csvDownload <- util.tableDownload.handleTableDownload(tableReactiveValue, filePrefix, ".csv", util.tableDownload.csvWriteHandler)
+  output$xlsxDownload <- util.tableDownload.handleTableDownload(tableReactiveValue, filePrefix, ".xlsx", util.tableDownload.xlsxWriteHandler)
 
 }
