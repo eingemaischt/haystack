@@ -85,5 +85,7 @@ source("tabs/annotations/annotationsTabUI.R")
 source("tabs/pathways/pathwaysTab.R")
 source("tabs/pathways/pathwaysTabUI.R")
 
+source("tabs/help/helpTabUI.R")
+
 source("sidebarFiltering/sidebarFiltering.R")
 source("sidebarFiltering/sidebarFilteringUI.R")

@@ -9,6 +9,7 @@ shinyUI(
         menuItem("Gene comparison", tabName = "geneComparisonTab", icon = icon("refresh")),
         menuItem("Annotations", tabName = "annotationTab", icon = icon("globe")),
         menuItem("Pathways",   tabName = "pathwayTab",   icon = icon("random")),
+        menuItem("Help", tabName = "helpTab", icon = icon("question-circle")),
 
         sidebar.moduleUI("sidebarFiltering")
       )
@@ -33,6 +34,9 @@ shinyUI(
         ),
         tabItem(tabName = "pathwayTab",
           tabs.pathways.moduleUI("pathwaysTab")
+        ),
+        tabItem(tabName = "helpTab",
+          tabs.help.moduleUI("helpTab")
         )
       )
     )
