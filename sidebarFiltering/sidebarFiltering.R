@@ -75,9 +75,7 @@ sidebar.filterSettingsReactiveTable <- function (input) {
 
 }
 
-sidebar.module <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter) {
-
-  geneTable <- reactiveVal()
+sidebar.module <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter, geneTable) {
 
   callModule(util.tableDownload.module, "filterDownload", sidebar.filterSettingsReactiveTable(input), "filter-settings-")
 
@@ -180,5 +178,5 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
   })
 
-  return(geneTable)
+
 }

@@ -58,13 +58,15 @@ tabs.callTable.readCallTable <- function (fileName) {
 
 }
 
-tabs.callTable.module <- function (input, output, session) {
-
-  fullCallTable <- reactiveVal()
-  filteredCallTable <- reactiveVal()
-  expressionFilter <- reactiveVal()
+tabs.callTable.module <- function (input, output, session, fullCallTable, filteredCallTable, expressionFilter, selectedColumns) {
 
   callModule(util.tableDownload.module, "filteredCallDownload", filteredCallTable, "filtered-calls-")
+
+  observe({
+
+    selectedColumns(input$selectedColumns)
+
+  })
 
   observeEvent(input$callFile, {
 
@@ -147,11 +149,4 @@ tabs.callTable.module <- function (input, output, session) {
   observeEvent(input$modalOkBtn, {
     removeModal()
   })
-
-  return(list(
-    filteredCallTable = filteredCallTable,
-    fullCallTable = fullCallTable,
-    selectedColumns = reactive({ input$selectedColumns }),
-    expressionFilter = expressionFilter
-  ))
 }
