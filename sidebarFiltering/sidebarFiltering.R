@@ -1,4 +1,4 @@
-sidebar.resetFilters <- function (session, callTable) {
+sidebar.resetFilters <- function (session, callTable, geneFilter) {
 
   numberOfSamples <- length(unique(callTable$Sample))
   consequences <- unique(unlist(strsplit(callTable$Consequence, ",")))
@@ -8,12 +8,15 @@ sidebar.resetFilters <- function (session, callTable) {
   minTpmRank <- min(annotation.gtexExpression$tpm_rank)
   maxTpmRank <- max(annotation.gtexExpression$tpm_rank)
 
+  geneFilter("")
+
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0)
   updateSliderInput(session, "minVariantDepth", value = 0)
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateSliderInput(session, "tpmRank", value = c(minTpmRank, maxTpmRank))
+  updateTextAreaInput(session, "genes", value = "")
   updateSelectInput(session, "proteinLevel", selected = "Any")
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
   updateCheckboxInput(session, "onlyCompoundHeterozygosity", value = FALSE)
@@ -48,7 +51,7 @@ sidebar.collapsedListFilter <- function (listFilter) {
 
 }
 
-sidebar.filterSettingsReactiveTable <- function (input) {
+sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
 
   return(function () {
 
@@ -63,6 +66,7 @@ sidebar.filterSettingsReactiveTable <- function (input) {
       `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
       `Scaled GTEx TPM value` = sidebar.intervalFilterString(input$scaledTPM),
       `GTEx TPM rank` = sidebar.intervalFilterString(input$tpmRank),
+      `Gene` = sidebar.collapsedListFilter(geneFilter()),
       `Consequence` = sidebar.collapsedListFilter(input$consequences),
       `Study` = sidebar.collapsedListFilter(input$studies),
       `Chromosome` = sidebar.collapsedListFilter(input$chromosomes)
@@ -77,13 +81,15 @@ sidebar.filterSettingsReactiveTable <- function (input) {
 
 sidebar.module <- function (input, output, session, fullCallTable, filteredCallTable, selectedColumns, expressionFilter, geneTable) {
 
-  callModule(util.tableDownload.module, "filterDownload", sidebar.filterSettingsReactiveTable(input), "filter-settings-")
+  geneFilter <- reactiveVal("")
+
+  callModule(util.tableDownload.module, "filterDownload", sidebar.filterSettingsReactiveTable(input, geneFilter), "filter-settings-")
 
   observeEvent(input$filterReset, {
 
     req(fullCallTable())
 
-    sidebar.resetFilters(session, fullCallTable())
+    sidebar.resetFilters(session, fullCallTable(), geneFilter)
 
   })
 
@@ -105,12 +111,11 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
     req(fullCallTable())
 
-    sidebar.resetFilters(session, fullCallTable())
+    sidebar.resetFilters(session, fullCallTable(), geneFilter)
 
   })
 
   observe({
-
     req(fullCallTable())
     req(selectedColumns())
     req(input$sampleNumber)
@@ -166,10 +171,23 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         tissue %in% input$expressions
     ]
 
+    genesKept <- unlist(strsplit(input$genes, "\n"))
+    genesKept <- str_replace_all(genesKept, " ", "")
+    genesKept <- genesKept[nchar(genesKept) > 0]
+
+    geneFilter(genesKept)
+
+    genesKeptIndices <- annotation.symbolToIndexMap[[genesKept]]
+    genesKeptValidNames <- !is.na(genesKeptIndices)
+    genesKeptNames <- annotation.geneTable$symbol[genesKeptIndices[genesKeptValidNames]]
+
+    genesKeptInvalidNames <- toupper(genesKept[!genesKeptValidNames])
+
     gt <- gt[
       input$sampleNumber[1] <= samples &
-        input$sampleNumber[2] >= samples &
-        (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol)
+      input$sampleNumber[2] >= samples &
+      (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol) &
+      (length(genesKept) == 0 | (!is.na(matchingGeneIndices) & matchingGeneNames %in% genesKeptNames) | (is.na(matchingGeneIndices) & toupper(Symbol) %in% genesKeptInvalidNames))
     ]
     ct <- ct[Symbol %in% gt$Symbol]
 

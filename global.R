@@ -32,7 +32,8 @@ cranPackages <- c(
   "DT",
   "VennDiagram",
   "xml2",
-  "rclipboard"
+  "rclipboard",
+  "stringr"
 )
 
 biocPackages <- c(
