@@ -2,6 +2,16 @@ tabs.geneTable.module <- function (input, output, session, geneTable, filteredCa
 
   callModule(util.tableDownload.module, "geneDownload", geneTable, "genes-")
 
+  observe({
+
+    req(geneTable())
+
+    geneNames <- geneTable()$Symbol
+
+    output$geneNamesToClipboard <- util.copyToClipboardButton(paste0(geneNames, collapse = "\n"), "geneNamesToClipboardBtn")
+
+  })
+
   output$geneTable <- DT::renderDataTable({
     req(geneTable())
 
