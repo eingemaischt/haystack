@@ -44,11 +44,6 @@ annotation.symbolToIndexMap <- (function () {
 
   symbolMap[[secondaryKeys]] <- secondaryValues
 
-  containingLowercaseKeys <- symbolMap$keys()
-  containingLowercaseKeys <- containingLowercaseKeys[toupper(containingLowercaseKeys) != containingLowercaseKeys]
-
-  symbolMap[[toupper(containingLowercaseKeys)]] <- symbolMap[[containingLowercaseKeys]]
-
   return(symbolMap)
 })()
 
