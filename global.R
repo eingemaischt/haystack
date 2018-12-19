@@ -10,8 +10,7 @@ loadOrInstall <- function (packageName, type = "CRAN") {
 
     } else if (type == "bioc") {
 
-      source("https://bioconductor.org/biocLite.R")
-      biocLite(packageName)
+      BiocManager::install(packageName)
 
     }
 
@@ -33,7 +32,8 @@ cranPackages <- c(
   "VennDiagram",
   "xml2",
   "rclipboard",
-  "stringr"
+  "stringr",
+  "BiocManager"
 )
 
 biocPackages <- c(
