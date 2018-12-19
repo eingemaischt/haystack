@@ -99,6 +99,9 @@ annotation.gtexExpression <- (function () {
   combined$symbol <- annotation.geneTable$symbol[annotation.symbolToIndexMap[[combined$Description]]]
   combined$tissue <- tolower(combined$tissue)
 
+  ambigousSymbols <- combined[,.N, by = list(symbol, tissue)][N > 1]$symbol
+  combined <- combined[!symbol %in% ambigousSymbols | symbol %in% ambigousSymbols & symbol == Description]
+
   return(combined[tpm > 0 & !is.na(symbol)])
 
 })()
