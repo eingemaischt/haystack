@@ -16,6 +16,16 @@ tabs.callTable.isValidTable <- function (dt) {
 
 }
 
+tabs.callTable.reparseTable <- function (data) {
+
+  tmpFile <- tempfile()
+  fwrite(data, tmpFile)
+  ct <- fread(tmpFile)
+  file.remove(tmpFile)
+
+  return(ct)
+}
+
 tabs.callTable.readCallTable <- function (fileName) {
 
   lowercaseFileName <- tolower(fileName)
@@ -37,13 +47,15 @@ tabs.callTable.readCallTable <- function (fileName) {
     # https://github.com/awalker89/openxlsx/issues/102
     colnames(xlsxTable) <- gsub("\\.", " ", colnames(xlsxTable))
 
-    tmpFile <- tempfile()
-    fwrite(xlsxTable, tmpFile)
-    ct <- fread(tmpFile)
-    file.remove(tmpFile)
+    ct <- tabs.callTable.reparseTable(xlsxTable)
 
   } else {
     return(NULL)
+  }
+
+  # Strip column descriptions from table
+  if (ct$Chr[1] == "Chromosome") {
+    ct <- tabs.callTable.reparseTable(ct[-1])
   }
 
   if (is.numeric(ct$Chr)) {
@@ -78,7 +90,7 @@ tabs.callTable.module <- function (input, output, session, fullCallTable, filter
     ct <- tabs.callTable.readCallTable(input$callFile$datapath)
 
     if(is.null(ct)) {
-      util.showErrorModal("Could not correctly read table. Make sure there are no trailing rows, all relevant columns are present and dots are used as decimal seperators.")
+      util.showErrorModal("Could not correctly read table. Make sure all relevant columns are present and dots are used as decimal seperators.")
       progress$close()
     }
 

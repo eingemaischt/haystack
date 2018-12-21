@@ -10,7 +10,6 @@ tabs.help.moduleUI <- function (id) {
         tags$div("You can upload your Sciobase variant tables using the 'Call Table' tab. Both CSV and XLSX files are allowed. All uploaded tables are sanity-checked prior to loading. This might lead to potential errors when uploading."),
         tags$div("If you are uploading a file, make sure your table meets the following criteria:"),
         tags$ul(
-          tags$li("Sciobase category information (usually the second row) must be removed prior to uploading."),
           tags$li("Sorting order should be patient-wise."),
           tags$li("Feature ID should be picked by variant effect predictor."),
           tags$li("There should be no samples where the sampe patient has been sequenced multiple times (e.g. both WES and WGS)."),
