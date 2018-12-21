@@ -21,6 +21,7 @@ sidebar.moduleUI <- function (id) {
       annotation.gtexExpression$tissue)),
     sliderInput(ns("scaledTPM"), label = "Scaled GTEx TPM value", min = 0, max = 1, value = c(0,1), step = 0.01),
     sliderInput(ns("tpmRank"), label = "GTEx TPM rank", min = minTpmRank, max = maxTpmRank, value = c(minTpmRank, maxTpmRank)),
+    sliderInput(ns("gnomadOe"), label = "gnomAD observed/expected score", min = 0, max = 1, value = c(0, 1), step = 0.01),
     textAreaInput(ns("genes"), label = "Gene", value = "", placeholder = "Enter genes here, one gene per line", resize = "none"),
     selectizeInput(ns("consequences"), label = "Consequence", multiple = TRUE, choices = "NA"),
     selectizeInput(ns("studies"), label = "Study", multiple = TRUE, choices = "NA"),

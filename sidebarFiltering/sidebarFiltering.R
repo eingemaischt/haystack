@@ -10,12 +10,16 @@ sidebar.resetFilters <- function (session, callTable, geneFilter) {
 
   geneFilter("")
 
+  maxGnomadOeScore <- max(callTable$`gnomAD oe`, na.rm = TRUE)
+  maxGnomadOeScore <- ifelse(is.infinite(maxGnomadOeScore), 1, maxGnomadOeScore)
+
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
   updateSliderInput(session, "minReadDepth", value = 0)
   updateSliderInput(session, "minVariantDepth", value = 0)
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateSliderInput(session, "tpmRank", value = c(minTpmRank, maxTpmRank))
+  updateSliderInput(session, "gnomadOe", value = c(0, maxGnomadOeScore), max = maxGnomadOeScore)
   updateTextAreaInput(session, "genes", value = "")
   updateSelectInput(session, "proteinLevel", selected = "Any")
   updateCheckboxGroupInput(session, "genotypes", selected = c("unknown", "0/1, 1/0", "1/1"))
@@ -61,6 +65,7 @@ sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
       `Minimum variant depth` = input$minVariantDepth,
       `Frequency (variant depth / read depth)` = sidebar.intervalFilterString(input$readVariantFrequency),
       `Maximum AF Popmax` = input$maxAFPopmax,
+      `gnomAD observed/expected` = sidebar.intervalFilterString(input$gnomadOe),
       `Genotype` = sidebar.collapsedListFilter(input$genotypes),
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
       `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
@@ -124,6 +129,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     req(input$maxAFPopmax)
     req(input$scaledTPM)
     req(input$tpmRank)
+    req(input$gnomadOe)
 
     ct <- fullCallTable()
 
@@ -139,6 +145,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
         ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
         (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
+        (is.na(`gnomAD oe`) | is.nan(`gnomAD oe`) | (input$gnomadOe[1] <= `gnomAD oe` & input$gnomadOe[2] >= `gnomAD oe`)) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
         (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
         (is.null(input$chromosomes) | Chr %in% input$chromosomes),

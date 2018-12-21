@@ -1,7 +1,7 @@
 tabs.callTable.isValidTable <- function (dt) {
 
   characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
-  numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth")
+  numericColumns <- c("Position", "AF Popmax", "Read depth", "Variant depth", "gnomAD oe")
   expectedColumns <- c(characterColumns, numericColumns)
 
   if (any(!expectedColumns %in% colnames(dt))) return(FALSE)
