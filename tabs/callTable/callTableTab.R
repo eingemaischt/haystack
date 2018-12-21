@@ -97,6 +97,7 @@ tabs.callTable.module <- function (input, output, session, fullCallTable, filter
     req(ct)
 
     fullCallTable(ct)
+    selectedColumns(colnames(ct))
 
     updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
 
