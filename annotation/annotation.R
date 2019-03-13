@@ -168,6 +168,21 @@ annotation.hpaRnaExpression <- (function () {
 
 })()
 
+annotation.mpoPhenotypes <- (function () {
+
+  if (exists("annotation.mpoPhenotypes")) return(annotation.mpoPhenotypes)
+
+  genotypePhenotypeLinks <- fread(cmd = "zcat annotation/gene_attribute_edges.txt.gz")
+
+  hgncIndices <- annotation.symbolToIndexMap[[genotypePhenotypeLinks$source]]
+  isValidIndex <- !is.na(hgncIndices)
+
+  normalizedPhenotypeLinks <- genotypePhenotypeLinks[isValidIndex]
+  normalizedPhenotypeLinks$symbol <- annotation.geneTable$symbol[hgncIndices[isValidIndex]]
+
+  return(normalizedPhenotypeLinks)
+})()
+
 annotation.annotateFromEntrez <- function (hgncSymbols) {
 
   uniqueGenes <- unique(unlist(hgncSymbols))

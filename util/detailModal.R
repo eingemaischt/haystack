@@ -50,6 +50,8 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
 
     matchingGene <- annotation.geneTable[annotation.symbolToIndexMap[[selectedSymbol]]]
 
+    mpoPhenotypes <- annotation.mpoPhenotypes[symbol == matchingGene$symbol]$target
+
     showModal(modalDialog(
       util.detailModal.detailDivElement("Location:", matchingGene$location),
       util.detailModal.detailDivElement("Gene (found in table):", selectedSymbol),
@@ -59,6 +61,7 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
       util.detailModal.detailDivElement("Gene description:", matchingGene$description),
       util.detailModal.detailDivElement("Location type:", matchingGene$locus_type),
       util.detailModal.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
+      util.detailModal.detailDivElement("MPO phenotypes: ", paste0(mpoPhenotypes, collapse = ", ")),
       tags$hr(),
       tags$b("Expression:"),
       tabsetPanel(
