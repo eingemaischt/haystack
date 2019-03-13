@@ -17,6 +17,7 @@ sidebar.resetFilters <- function (session, callTable, geneFilter) {
   updateSliderInput(session, "minReadDepth", value = 0)
   updateSliderInput(session, "minVariantDepth", value = 0)
   updateSliderInput(session, "readVariantFrequency", value = c(0,1))
+  updateSliderInput(session, "balance", value = c(0, 100))
   updateSliderInput(session, "scaledTPM", value = c(0,1))
   updateSliderInput(session, "tpmRank", value = c(minTpmRank, maxTpmRank))
   updateSliderInput(session, "gnomadOe", value = c(0, maxGnomadOeScore), max = maxGnomadOeScore)
@@ -64,6 +65,7 @@ sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
       `Minimum read depth` = input$minReadDepth,
       `Minimum variant depth` = input$minVariantDepth,
       `Frequency (variant depth / read depth)` = sidebar.intervalFilterString(input$readVariantFrequency),
+      `Balance` = sidebar.intervalFilterString(input$balance),
       `Maximum AF Popmax` = input$maxAFPopmax,
       `gnomAD observed/expected` = sidebar.intervalFilterString(input$gnomadOe),
       `Genotype` = sidebar.collapsedListFilter(input$genotypes),
@@ -130,6 +132,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     req(input$scaledTPM)
     req(input$tpmRank)
     req(input$gnomadOe)
+    req(input$balance)
 
     ct <- fullCallTable()
 
@@ -146,6 +149,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
         (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
         (is.na(`gnomAD oe`) | is.nan(`gnomAD oe`) | (input$gnomadOe[1] <= `gnomAD oe` & input$gnomadOe[2] >= `gnomAD oe`)) &
+        (is.na(`Balance`) | (input$balance[1] <= `Balance` & input$balance[2] >= `Balance`)) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
         (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
         (is.null(input$chromosomes) | Chr %in% input$chromosomes),
