@@ -30,6 +30,7 @@ sidebar.resetFilters <- function (session, callTable, geneFilter) {
   updateSelectizeInput(session, "consequences", selected = NULL, choices = consequences)
   updateSelectizeInput(session, "studies", selected = NULL, choices = studies)
   updateSelectizeInput(session, "chromosomes", selected = NULL, choices = unique(callTable$Chr))
+  updateSelectInput(session, "mpoPhenotypes", selected = NULL)
 
 }
 
@@ -71,6 +72,7 @@ sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
       `Genotype` = sidebar.collapsedListFilter(input$genotypes),
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
       `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
+      `MPO phenotypes` = sidebar.collapsedListFilter(input$mpoPhenotypes),
       `Scaled GTEx TPM value` = sidebar.intervalFilterString(input$scaledTPM),
       `GTEx TPM rank` = sidebar.intervalFilterString(input$tpmRank),
       `Gene` = sidebar.collapsedListFilter(geneFilter()),
@@ -194,10 +196,13 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
     genesKeptInvalidNames <- toupper(genesKept[!genesKeptValidNames])
 
+    mpoFilteredGenes <- annotation.mpoPhenotypes[target %in% input$mpoPhenotypes]$symbol
+
     gt <- gt[
       input$sampleNumber[1] <= samples &
       input$sampleNumber[2] >= samples &
       (is.null(input$expressions) | matchingGeneNames %in% gtexFilteredGenes$symbol) &
+      (is.null(input$mpoPhenotypes) | matchingGeneNames %in% mpoFilteredGenes) &
       (length(genesKept) == 0 | (!is.na(matchingGeneIndices) & matchingGeneNames %in% genesKeptNames) | (is.na(matchingGeneIndices) & toupper(Symbol) %in% genesKeptInvalidNames))
     ]
     ct <- ct[Symbol %in% gt$Symbol]
