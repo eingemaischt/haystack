@@ -61,9 +61,6 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
       util.detailModal.detailDivElement("Gene description:", matchingGene$description),
       util.detailModal.detailDivElement("Location type:", matchingGene$locus_type),
       util.detailModal.detailDivElement("Ensembl ID:", matchingGene$ensembl_gene_id),
-      util.detailModal.detailDivElement("MPO phenotypes: ", paste0(mpoPhenotypes, collapse = ", ")),
-      tags$hr(),
-      tags$b("Expression:"),
       tabsetPanel(
         tabPanel("GTEx (TPM scaled)", plotOutput(ns("modalGTExScaledExpression"), height = "640px")),
         tabPanel("GTEx (TPM ranked)", plotOutput(ns("modalGTExRankedExpression"), height = "640px")),
@@ -74,7 +71,14 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
           tags$h5(paste0("Mutations for ", selectedSymbol), ":"),
           tableOutput(ns("modalMutationTypes"))
         )
-        )
+        ),
+        tabPanel("MPO phenotypes", tags$div(
+          tags$table(
+            tags$tbody(
+              lapply(mpoPhenotypes, function (phenotype) tags$tr(tags$td(phenotype)))
+            )
+          )
+        ))
       ),
       title = "Details",
       footer = actionButton(ns("modalOkBtn"), label = "OK", icon = icon("ok")),
