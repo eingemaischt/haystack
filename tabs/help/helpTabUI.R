@@ -80,7 +80,8 @@ tabs.help.moduleUI <- function (id) {
           tags$li("All sample-based filtering is done using the Sample column, not the column for PatientNr's."),
           tags$li("Unknown genotype filters include genotypes such as 0/0, 0/., ./1 etc."),
           tags$li("Filtering by compound-heterozygosity often requires manual inspection: Sometimes, two variants lie exactly next to each other, so an artefact may be likely."),
-          tags$li("Genotypes are extracted from the input variant table without checking for sex chromosomes, so heterozygosity and homozygosity might not work as expected for these variants.")
+          tags$li("Genotypes are extracted from the input variant table without checking for sex chromosomes, so heterozygosity and homozygosity might not work as expected for these variants."),
+          tags$li("When selecting multiple MPO terms, a gene needs to be associated with any of the entered terms to pass the filter (instead of all entered terms).")
         )
       )
     )
