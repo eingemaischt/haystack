@@ -196,7 +196,14 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
     genesKeptInvalidNames <- toupper(genesKept[!genesKeptValidNames])
 
-    mpoFilteredGenes <- annotation.mpoPhenotypes[target %in% input$mpoPhenotypes]$symbol
+    mpoPhenotypes <- annotation.mpoPhenotypes[symbol %in% matchingGeneNames]
+
+    groupedPhenotypes <- mpoPhenotypes[, list(phenotype = paste0(target, collapse = ", ")), by = symbol]
+    mpoIndices <- match(matchingGeneNames, groupedPhenotypes$symbol)
+
+    gt$mpoPhenotypes <- groupedPhenotypes$phenotype[mpoIndices]
+
+    mpoFilteredGenes <- mpoPhenotypes[target %in% input$mpoPhenotypes]$symbol
 
     gt <- gt[
       input$sampleNumber[1] <= samples &

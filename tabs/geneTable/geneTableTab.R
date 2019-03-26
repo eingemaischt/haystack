@@ -18,7 +18,16 @@ tabs.geneTable.module <- function (input, output, session, geneTable, filteredCa
     return(DT::datatable(geneTable(),
                          selection = "single",
                          style = "bootstrap",
-                         class = DT:::DT2BSClass(c("hover", "stripe")))
+                         class = DT:::DT2BSClass(c("hover", "stripe")),
+                         options = list(
+                           columnDefs =
+                             list(
+                               list(
+                                 visible = FALSE,
+                                 targets = 8
+                               )
+                             )
+                         ))
     )
   })
 
