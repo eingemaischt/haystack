@@ -22,6 +22,7 @@ loadOrInstall <- function (packageName, type = "CRAN") {
 cranPackages <- c(
   "shiny",
   "shinydashboard",
+  "shinyFeedback",
   "data.table",
   "hashmap",
   "httr",

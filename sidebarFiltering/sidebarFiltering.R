@@ -34,17 +34,6 @@ sidebar.resetFilters <- function (session, callTable, geneFilter) {
 
 }
 
-sidebar.handleErrorNotification <- function (value, filterName, notificationId) {
-
-  if (is.na(value)) {
-    showNotification(paste0("Invalid number in ", filterName, " filter"), closeButton = FALSE, type = "error", duration = NULL, id = notificationId)
-  } else {
-    removeNotification(notificationId)
-  }
-
-}
-
-
 sidebar.intervalFilterString <- function(rangeInput) {
 
   return(paste0("[", rangeInput[1], ",", rangeInput[2], "]"))
@@ -102,11 +91,14 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
   })
 
-  observe({
+  observeEvent(input$maxAFPopmax, {
 
-    maxPopMax <- input$maxAFPopmax
-
-    sidebar.handleErrorNotification(maxPopMax, "AF Popmax ", "popmaxErrorNotification")
+    # Input ID needs namespace prefix (unfortunately)
+    feedbackDanger(
+      inputId = "sidebarFiltering-maxAFPopmax",
+      condition = is.na(input$maxAFPopmax),
+      text = "Invalid number, make sure to use appropriate delimiter."
+    )
 
   })
 
