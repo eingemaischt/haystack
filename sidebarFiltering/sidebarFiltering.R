@@ -122,7 +122,6 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     req(input$sampleNumber)
     req(input$minReadDepth)
     req(input$minVariantDepth)
-    req(input$maxAFPopmax)
     req(input$scaledTPM)
     req(input$tpmRank)
     req(input$gnomadOe)
@@ -141,7 +140,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         `Read depth` >= input$minReadDepth &
         (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
         ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
-        (is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
+        (is.na(input$maxAFPopmax) | is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
         (is.na(`gnomAD oe`) | is.nan(`gnomAD oe`) | (input$gnomadOe[1] <= `gnomAD oe` & input$gnomadOe[2] >= `gnomAD oe`)) &
         (is.na(`Balance`) | (input$balance[1] <= `Balance` & input$balance[2] >= `Balance`)) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
