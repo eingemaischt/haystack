@@ -1,7 +1,7 @@
 shinyUI(
 
   dashboardPage(
-    dashboardHeader(title = "Human Genetics Shiny Germ Cells"),
+    dashboardHeader(title = "Haystack"),
     dashboardSidebar(
       sidebarMenu(
         menuItem("Call table", tabName = "callTableTab", icon = icon("th-list")),
