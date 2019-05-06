@@ -11,7 +11,7 @@ sidebar.moduleUI <- function (id) {
     sliderInput(ns("minVariantDepth"), label = "Minimum variant depth", min = 0, max = 200, value = 0),
     sliderInput(ns("readVariantFrequency"), label = "Frequency (variant depth / read depth)", min = 0, max = 1, step = 0.05, value = c(0,1)),
     sliderInput(ns("balance"), label = "Balance", min = 0, max = 100, step = 0.1, value = c(0, 100)),
-    numericInput(ns("maxAFPopmax"), label = "Maximum AF Popmax", min = 0, max = 100, value = 100),
+    numericInput(ns("maxAFPopmax"), label = "Maximum AF gnomAD Popmax", min = 0, max = 100, value = 100),
     checkboxGroupInput(ns("genotypes"), label = "Genotype", choices = list(
       "unknown" = "unknown",
       "0/1, 1/0" = "0/1, 1/0",

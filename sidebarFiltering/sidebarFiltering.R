@@ -56,7 +56,7 @@ sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
       `Minimum variant depth` = input$minVariantDepth,
       `Frequency (variant depth / read depth)` = sidebar.intervalFilterString(input$readVariantFrequency),
       `Balance` = sidebar.intervalFilterString(input$balance),
-      `Maximum AF Popmax` = input$maxAFPopmax,
+      `Maximum AF gnomAD Popmax` = input$maxAFPopmax,
       `gnomAD observed/expected` = sidebar.intervalFilterString(input$gnomadOe),
       `Genotype` = sidebar.collapsedListFilter(input$genotypes),
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
@@ -140,7 +140,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         `Read depth` >= input$minReadDepth &
         (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
         ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
-        (is.na(input$maxAFPopmax) | is.na(`AF Popmax`) | input$maxAFPopmax >= `AF Popmax`) &
+        (is.na(input$maxAFPopmax) | is.na(`AF gnomAD Popmax`) | input$maxAFPopmax >= `AF gnomAD Popmax`) &
         (is.na(`gnomAD oe`) | is.nan(`gnomAD oe`) | (input$gnomadOe[1] <= `gnomAD oe` & input$gnomadOe[2] >= `gnomAD oe`)) &
         (is.na(`Balance`) | (input$balance[1] <= `Balance` & input$balance[2] >= `Balance`)) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
