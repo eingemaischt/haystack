@@ -90,7 +90,7 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
 
     uniqueMutations <- callsInGene[,
                                    list("Samples" = length(unique(Sample))),
-                                   by = list(HGVSc, Chr, Position, Consequence, `AF Popmax`)
+                                   by = list(HGVSc, Chr, Position, Consequence, `AF gnomAD Popmax`)
                                    ]
 
     matchingGtexExpression <- annotation.gtexExpression[symbol == matchingGene$symbol]
