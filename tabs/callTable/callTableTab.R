@@ -1,18 +1,22 @@
-tabs.callTable.isValidTable <- function (dt) {
+tabs.callTable.findMalformedColumns <- function (dt) {
 
   characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
   numericColumns <- c("Position", "AF gnomAD Popmax", "Read depth", "Variant depth", "gnomAD oe", "Balance")
   expectedColumns <- c(characterColumns, numericColumns)
 
-  if (any(!expectedColumns %in% colnames(dt))) return(FALSE)
+  columnsNotFound <- expectedColumns[!expectedColumns %in% colnames(dt)]
+
+  if (length(columnsNotFound) > 0) return(columnsNotFound)
 
   actualCharacterColumnTypes <- sapply(dt[,..characterColumns], class)
   actualNumericColumnTypes <- sapply(dt[,..numericColumns], class)
 
-  return(
-    all(actualCharacterColumnTypes == "character") &&
-      all(actualNumericColumnTypes %in% c("numeric", "integer", "logical"))
-  )
+  mismatchingCharacterColumns <- characterColumns[actualCharacterColumnTypes != "character"]
+  mismatchingNumericColumns <- numericColumns[!actualNumericColumnTypes %in% c("numeric", "integer", "logical")]
+
+  if (length(mismatchingCharacterColumns) + length(mismatchingNumericColumns) > 0) return(c(mismatchingNumericColumns, mismatchingCharacterColumns))
+
+  return(NULL)
 
 }
 
@@ -62,11 +66,13 @@ tabs.callTable.readCallTable <- function (fileName) {
     ct$Chr <- as.character(ct$Chr)
   }
 
-  if (tabs.callTable.isValidTable(ct)) {
-    return(ct)
-  } else {
-    return(NULL)
+  malformedColumns <- tabs.callTable.findMalformedColumns(ct)
+
+  if(length(malformedColumns) > 0) {
+    stop(paste0("Found malformed columns: ", paste0(malformedColumns, collapse = ", ")))
   }
+
+  return(ct)
 
 }
 
@@ -87,12 +93,13 @@ tabs.callTable.module <- function (input, output, session, fullCallTable, filter
     progress <- shiny::Progress$new()
     progress$set(message = "Uploading table", value = .5)
 
-    ct <- tabs.callTable.readCallTable(input$callFile$datapath)
+    ct <- tryCatch(tabs.callTable.readCallTable(input$callFile$datapath), error = function (e) {
 
-    if(is.null(ct)) {
-      util.showErrorModal("Could not correctly read table. Make sure all relevant columns are present and dots are used as decimal seperators.")
+      util.showErrorModal(paste0("Could not correctly read table. Make sure all relevant columns are present and dots are used as decimal seperators. ", e$message))
       progress$close()
-    }
+      return(NULL)
+
+    })
 
     req(ct)
 
