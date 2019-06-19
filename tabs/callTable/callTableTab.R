@@ -1,7 +1,7 @@
 tabs.callTable.findMalformedColumns <- function (dt) {
 
   characterColumns <- c("Sample", "Studie", "Chr", "Symbol", "HGVSc", "Consequence", "Genotype")
-  numericColumns <- c("Position", "AF gnomAD Popmax", "Read depth", "Variant depth", "gnomAD oe", "Balance")
+  numericColumns <- c("Position", "AF gnomAD Popmax", "Read depth", "Variant depth", "gnomAD oe lof", "Balance")
   expectedColumns <- c(characterColumns, numericColumns)
 
   columnsNotFound <- expectedColumns[!expectedColumns %in% colnames(dt)]

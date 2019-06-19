@@ -10,7 +10,7 @@ sidebar.resetFilters <- function (session, callTable, geneFilter) {
 
   geneFilter("")
 
-  maxGnomadOeScore <- max(callTable$`gnomAD oe`, na.rm = TRUE)
+  maxGnomadOeScore <- max(callTable$`gnomAD oe lof`, na.rm = TRUE)
   maxGnomadOeScore <- ifelse(is.infinite(maxGnomadOeScore), 1, maxGnomadOeScore)
 
   updateSliderInput(session, "sampleNumber", value = c(0, numberOfSamples), max = numberOfSamples)
@@ -57,7 +57,7 @@ sidebar.filterSettingsReactiveTable <- function (input, geneFilter) {
       `Frequency (variant depth / read depth)` = sidebar.intervalFilterString(input$readVariantFrequency),
       `Balance` = sidebar.intervalFilterString(input$balance),
       `Maximum AF gnomAD Popmax` = input$maxAFPopmax,
-      `gnomAD observed/expected` = sidebar.intervalFilterString(input$gnomadOe),
+      `gnomAD observed/expected (loss of function)` = sidebar.intervalFilterString(input$gnomadOe),
       `Genotype` = sidebar.collapsedListFilter(input$genotypes),
       `Show only compound heterozygosity candidates` = input$onlyCompoundHeterozygosity,
       `GTEx tissue expression` = sidebar.collapsedListFilter(input$expressions),
@@ -141,7 +141,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
         (`Variant depth` >= input$minVariantDepth | is.na(`Variant depth`)) &
         ((input$readVariantFrequency[1] <= variantFrequency & variantFrequency <= input$readVariantFrequency[2]) | `Read depth` == 0) &
         (is.na(input$maxAFPopmax) | is.na(`AF gnomAD Popmax`) | input$maxAFPopmax >= `AF gnomAD Popmax`) &
-        (is.na(`gnomAD oe`) | is.nan(`gnomAD oe`) | (input$gnomadOe[1] <= `gnomAD oe` & input$gnomadOe[2] >= `gnomAD oe`)) &
+        (is.na(`gnomAD oe lof`) | is.nan(`gnomAD oe lof`) | (input$gnomadOe[1] <= `gnomAD oe lof` & input$gnomadOe[2] >= `gnomAD oe lof`)) &
         (is.na(`Balance`) | (input$balance[1] <= `Balance` & input$balance[2] >= `Balance`)) &
         (is.null(input$consequences) | grepl(paste0(input$consequences, collapse = "|"), Consequence)) &
         (is.null(input$studies) | grepl(paste0(input$studies, collapse = "|"), Studie)) &
