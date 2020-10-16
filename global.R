@@ -24,7 +24,6 @@ cranPackages <- c(
   "shinydashboard",
   "shinyFeedback",
   "data.table",
-  "hashmap",
   "httr",
   "ggplot2",
   "openxlsx",

@@ -48,7 +48,7 @@ util.detailModal.showDetailModal <- function (selectedSymbol, callTableReactiveV
 
     req(callTableReactiveVal())
 
-    matchingGene <- annotation.geneTable[annotation.symbolToIndexMap[[selectedSymbol]]]
+    matchingGene <- annotation.geneTable[annotation.symbolToIndexMap[selectedSymbol]]
 
     mpoPhenotypes <- annotation.mpoPhenotypes[symbol == matchingGene$symbol]$target
 

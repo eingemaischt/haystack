@@ -26,8 +26,8 @@ tabs.geneComparison.module <- function (input, output, session, fullCallTable, g
 
     theirSymbols <- comparedGenes()
 
-    ourIndices <- annotation.symbolToIndexMap[[ourSymbols]]
-    theirIndices <- annotation.symbolToIndexMap[[theirSymbols]]
+    ourIndices <- annotation.symbolToIndexMap[ourSymbols]
+    theirIndices <- annotation.symbolToIndexMap[theirSymbols]
 
     ourIndexTable <- data.table(symbol = ourSymbols, index = ourIndices)
     theirIndexTable <- data.table(symbol = theirSymbols, index = theirIndices)

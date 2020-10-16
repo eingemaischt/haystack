@@ -108,7 +108,7 @@ tabs.callTable.module <- function (input, output, session, fullCallTable, filter
 
     updateCheckboxGroupInput(session, "selectedColumns", choices = colnames(ct), selected = colnames(ct))
 
-    recognizedSymbolIndices <- annotation.symbolToIndexMap[[ct$Symbol]]
+    recognizedSymbolIndices <- annotation.symbolToIndexMap[ct$Symbol]
     symbolsAreRecognized <- !is.na(recognizedSymbolIndices)
     recognizedSymbols <- unique(annotation.geneTable$symbol[recognizedSymbolIndices[symbolsAreRecognized]])
 

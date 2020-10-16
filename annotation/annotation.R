@@ -1,9 +1,3 @@
-library(data.table)
-library(biomaRt)
-library(rentrez)
-library(hashmap)
-library(hpar)
-
 annotation.martMirror <- "www.ensembl.org"
 annotation.allowedReliabilities <- c("Approved", "Supported", "Enhanced")
 
@@ -21,7 +15,8 @@ annotation.geneTable <- (function () {
 
 annotation.symbolToIndexMap <- (function () {
 
-  symbolMap <- hashmap(annotation.geneTable$symbol, seq_along(annotation.geneTable$symbol))
+  symbolMap <- seq_along(annotation.geneTable$symbol)
+  names(symbolMap) <- annotation.geneTable$symbol
 
   splitAliases <- strsplit(annotation.geneTable$alias_symbol, "|", fixed = TRUE)
   splitPrevSymbols <- strsplit(annotation.geneTable$prev_symbol, "|", fixed = TRUE)
@@ -42,7 +37,7 @@ annotation.symbolToIndexMap <- (function () {
   secondaryKeys <- secondaryNames[validIndices]
   secondaryValues <- secondaryIndices[validIndices]
 
-  symbolMap[[secondaryKeys]] <- secondaryValues
+  symbolMap[secondaryKeys] <- secondaryValues
 
   return(symbolMap)
 })()
@@ -96,7 +91,7 @@ annotation.gtexExpression <- (function () {
   combined <- merge(rawGtexData, scaledGtexData)
   combined <- merge(combined, tpmRankData)
 
-  combined$symbol <- annotation.geneTable$symbol[annotation.symbolToIndexMap[[combined$Description]]]
+  combined$symbol <- annotation.geneTable$symbol[annotation.symbolToIndexMap[combined$Description]]
   combined$tissue <- tolower(combined$tissue)
 
   ambigousSymbols <- combined[,.N, by = list(symbol, tissue)][N > 1]$symbol
@@ -115,7 +110,7 @@ annotation.hpaProteinExpession <- (function () {
 
   normalizedExpression <- data.table(hpaNormalTissue, stringsAsFactors = FALSE)
 
-  hgncIndices <- annotation.symbolToIndexMap[[normalizedExpression$Gene.name]]
+  hgncIndices <- annotation.symbolToIndexMap[normalizedExpression$Gene.name]
   isValidIndex <- !is.na(hgncIndices)
 
   normalizedExpression <- normalizedExpression[isValidIndex]
@@ -140,7 +135,7 @@ annotation.hpaRnaExpression <- (function () {
 
   normalizedExpression <- data.table(rnaGeneTissue, stringsAsFactors = FALSE)
 
-  hgncIndices <- annotation.symbolToIndexMap[[normalizedExpression$Gene.name]]
+  hgncIndices <- annotation.symbolToIndexMap[normalizedExpression$Gene.name]
   isValidIndex <- !is.na(hgncIndices)
 
   normalizedExpression <- normalizedExpression[isValidIndex]
@@ -174,7 +169,7 @@ annotation.mpoPhenotypes <- (function () {
 
   genotypePhenotypeLinks <- fread(cmd = "zcat annotation/gene_attribute_edges.txt.gz")
 
-  hgncIndices <- annotation.symbolToIndexMap[[genotypePhenotypeLinks$source]]
+  hgncIndices <- annotation.symbolToIndexMap[genotypePhenotypeLinks$source]
   isValidIndex <- !is.na(hgncIndices)
 
   normalizedPhenotypeLinks <- genotypePhenotypeLinks[isValidIndex]

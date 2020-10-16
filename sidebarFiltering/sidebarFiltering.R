@@ -161,7 +161,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     gt <- gt[, list(samples = .N, compound_het_samples = sum(samples > 1)), by = .(Symbol)]
     gt <- gt[order(samples, decreasing = TRUE)]
 
-    matchingGeneIndices <- annotation.symbolToIndexMap[[gt$Symbol]]
+    matchingGeneIndices <- annotation.symbolToIndexMap[gt$Symbol]
     matchingGeneNames <- annotation.geneTable$symbol[matchingGeneIndices]
 
     gt$name <- annotation.geneTable$name[matchingGeneIndices]
@@ -181,7 +181,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
 
     geneFilter(genesKept)
 
-    genesKeptIndices <- annotation.symbolToIndexMap[[genesKept]]
+    genesKeptIndices <- annotation.symbolToIndexMap[genesKept]
     genesKeptValidNames <- !is.na(genesKeptIndices)
     genesKeptNames <- annotation.geneTable$symbol[genesKeptIndices[genesKeptValidNames]]
 

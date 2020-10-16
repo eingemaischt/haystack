@@ -6,7 +6,7 @@ tabs.pathways.module <- function (input, output, session, geneTable) {
 
     req(geneTable())
 
-    hgncSymbolIndices <- annotation.symbolToIndexMap[[geneTable()$Symbol]]
+    hgncSymbolIndices <- annotation.symbolToIndexMap[geneTable()$Symbol]
 
     hgncGenes <- unique(annotation.geneTable$symbol[hgncSymbolIndices[!is.na(hgncSymbolIndices)]])
 
