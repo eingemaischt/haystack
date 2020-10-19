@@ -96,7 +96,7 @@ sidebar.module <- function (input, output, session, fullCallTable, filteredCallT
     # Input ID needs namespace prefix (unfortunately)
     feedbackDanger(
       inputId = "sidebarFiltering-maxAFPopmax",
-      condition = is.na(input$maxAFPopmax),
+      show = is.na(input$maxAFPopmax),
       text = "Invalid number, make sure to use appropriate delimiter."
     )
 
